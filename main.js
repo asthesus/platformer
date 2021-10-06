@@ -216,6 +216,7 @@ avatar.pullup = (mode) => {if(mode === 0) {avatar.pullingup = false} else if(mod
 avatar.jump = (power) => {
     if(power === 0
     && avatar.crouching
+    && avatar.time_crouched >= avatar.stand_delay
     && !avatar.crouch_lock
     && !avatar.blocked(0, 1)
     && !avatar.zapped(0, 1)) {
@@ -248,6 +249,13 @@ avatar.jump = (power) => {
 avatar.move = (direction) => {
     let can_move = false;
     let grasped = false;
+    if(avatar.crouching
+    && avatar.time_crouched >= avatar.stand_delay
+    && !avatar.crouch_lock
+    && !avatar.blocked(0, 1)
+    && !avatar.zapped(0, 1)) {
+        avatar.crouch(2);
+    } 
     if(avatar.grasping) {
         if(avatar.facing === direction) {
             if(avatar.pullingup) {
