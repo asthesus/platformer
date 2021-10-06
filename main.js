@@ -36,52 +36,45 @@ stage.inputStringArray = (string_array) => {
     stage.matrix = [];
     stage.width = string_array[0].length;
     stage.height = string_array.length;
-    for(let iy = 0; iy < stage.height; iy++) {
-        stage.matrix[iy] = [];
-        for(let ix = 0; ix < stage.width; ix++) {
-            stage.matrix[iy][ix] = 0;
-        }
-    }
+    for(let iy = 0; iy < stage.height; iy++) {stage.matrix[iy] = []};
     for(let iy = 0; iy < stage.height; iy++) {
         for(let ix = 0; ix < stage.width; ix++) {
             let bx = stage.width - ix - 1;
             let by = stage.height - iy - 1;
             string = string_array[iy];
             stage.matrix[by][bx] = string.charAt(ix);
-            // if(isNaN(string.charAt(ix))) {
-            //     stage.matrix[by][bx] = string.charAt(ix);
-            // } else {
-            //     stage.matrix[by][bx] = parseInt(string.charAt(ix));
-            // }
             if(string.charAt(ix) === `s`) {
                 stage.spawn.x = bx;
                 stage.spawn.y = by;
             }
         }
     }
-    avatar.position.x = stage.spawn.x;
-    avatar.position.y = stage.spawn.y;
 }
 stage.draw = () => {
     for(let iy = 0; iy < stage.height; iy++) {
         for(let ix = 0; ix < stage.width; ix++) {
             let tile = 0;
-            let print_x = (avatar.position.x - ix) * canvas.dimension + canvas.center.x - canvas.dimension_half;
-            let print_y = (avatar.position.y - iy) * canvas.dimension + canvas.center.y - canvas.dimension_half;
+            let print_x = (avatar.position.x - ix) * canvas.dimension + canvas.center.x;
+            let print_y = (avatar.position.y - iy) * canvas.dimension + canvas.center.y;
             let dimension_x = canvas.dimension;
             let dimension_y = canvas.dimension;
             if(stage.matrix[iy][ix] === `b`) {tile = blue_bricks_img}
-            else if(stage.matrix[iy][ix] === `2`) {tile = spikes_img}
-            else if(stage.matrix[iy][ix] === `3`) {
+            else if(stage.matrix[iy][ix] === `1`) {tile = spikes_img}
+            else if(stage.matrix[iy][ix] === `2`) {
                 tile = spikes_img;
+                ctx.rotate(Math.PI * 0.5);
+                [print_x, print_y] = [print_y, print_x * -1];
+            } else if(stage.matrix[iy][ix] === `3`) {
+                tile = spikes_img;
+                ctx.rotate(Math.PI * 1);
+                [print_x, print_y] = [print_x * -1, print_y * -1];
             } else if(stage.matrix[iy][ix] === `4`) {
                 tile = spikes_img;
-                print_y = print_y * -1;
-                print_y -= canvas.dimension;
-                ctx.scale(1, -1);
-            } else if(stage.matrix[iy][ix] === `5`) {
-                tile = spikes_img;
+                ctx.rotate(Math.PI * 1.5);
+                [print_x, print_y] = [print_y * -1, print_x];
             }
+            print_x -= canvas.dimension_half;
+            print_y -= canvas.dimension_half;
             if(tile !== 0) ctx.drawImage(tile, print_x, print_y, dimension_x, dimension_y);
             ctx.resetTransform();
         }
@@ -134,7 +127,12 @@ avatar.correctStance = () => {
             avatar.height = 1;
             avatar.sprite = avatar_crouch_img;
             if(avatar.blocked(0, -1)) {avatar.time_crouched++} else avatar.time_crouched = 0;
-            if(avatar.time_crouched >= avatar.stand_delay && !avatar.crouch_lock) avatar.crouch(2);
+            if(avatar.time_crouched >= avatar.stand_delay
+            && !avatar.crouch_lock
+            && !avatar.blocked(0, 1)
+            && !avatar.zapped(0, 1)) {
+                avatar.crouch(2);
+            }
         } else {
             if(!avatar.blocked(0, 1)) {
                 avatar.time_crouched = 0;
@@ -168,15 +166,11 @@ avatar.blocked = (direction, height) => {
 avatar.zapped = (direction, height) => {
     if(stage.matrix[avatar.position.y + height] === undefined
     || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === undefined) {return false}
-    else if (stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `2`
+    else if (stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `1`
+    || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `2`
     || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `3`
-    || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `4`
-    || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `5`) {return true}
+    || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `4`) {return true}
     else return false;
-    // if(stage.matrix[avatar.position.y + height] === undefined) {return true}
-    // else if(stage.matrix[avatar.position.y + height][avatar.position.x + direction] === 0
-    // || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === 1) {return false}
-    // else return true;
 }
 avatar.draw = () => {
     let print_x = canvas.center.x - canvas.dimension_half;
@@ -220,6 +214,13 @@ avatar.grasp = (mode) => {
 }
 avatar.pullup = (mode) => {if(mode === 0) {avatar.pullingup = false} else if(mode === 1) {avatar.pullingup = true}};
 avatar.jump = (power) => {
+    if(power === 0
+    && avatar.crouching
+    && !avatar.crouch_lock
+    && !avatar.blocked(0, 1)
+    && !avatar.zapped(0, 1)) {
+        avatar.crouch(2);
+    } 
     if(avatar.grasping && avatar.height === 2) {
         if(avatar.pullingup && !avatar.blocked(0, -1)) {
             avatar.grasp(0);
@@ -397,14 +398,14 @@ stage1 = [
     `bbbbbbb.....................................`,
     `bbbbbbb...........b.b.b.....................`,
     `bbbbbbb..........bb.........................`,
-    `bbbbbbb.........bbb2222222..................`,
+    `bbbbbbb2........bbb1111111..................`,
     `bbbbbbb........bbbbbbbbbbb..................`,
-    `b....4........bbb444........................`,
-    `b.........2..bbbb...........................`,
+    `b....3........bbb333........................`,
+    `b.........1..bbbb...........................`,
     `b.bbbbbbbbbbbbbbb.b.........................`,
-    `b.........bb......b.....b...................`,
+    `b........4bb......b.....b...................`,
     `b.........bb......b....bb...................`,
-    `b....s....bb......bbbbbbb222................`,
+    `b....s....bb......bbbbbbb111................`,
     `bbbbbbbbbbbbbbbbbbbbbbbbbbbb................`
 ]
 stage.inputStringArray(stage1);
