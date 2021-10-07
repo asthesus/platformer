@@ -2,6 +2,7 @@ const htmlCanvas = document.getElementById(`c`);
 const ctx = htmlCanvas.getContext(`2d`);
 const blue_bricks_img = document.getElementById(`blue_bricks_png`);
 const spikes_img = document.getElementById(`spikes_png`);
+// const stained_glass_moon_img = document.getElementById(`stained_glass_moon_png`);
 const avatar_crouch_img = document.getElementById(`avatar_crouch_png`);
 const avatar_jump_img = document.getElementById(`avatar_jump_png`);
 const avatar_stand_img = document.getElementById(`avatar_stand_png`);
@@ -73,6 +74,11 @@ stage.draw = () => {
                 ctx.rotate(Math.PI * 1.5);
                 [print_x, print_y] = [print_y * -1, print_x];
             }
+            // else if(stage.matrix[iy][ix] === `g`) {
+            //     tile = stained_glass_moon_img;
+            //     dimension_x *= 2;
+            //     dimension_y *= 4;
+            // }
             print_x -= canvas.dimension_half;
             print_y -= canvas.dimension_half;
             if(tile !== 0) ctx.drawImage(tile, print_x, print_y, dimension_x, dimension_y);
@@ -90,7 +96,7 @@ avatar.alive = false;
 avatar.falling = false;
 avatar.pullingup = false;
 avatar.delay_action = 0;
-avatar.stand_delay = 20;
+avatar.stand_delay = 15;
 avatar.jump_delay = 10;
 avatar.airtime = 0;
 avatar.fell = 0;
@@ -103,20 +109,18 @@ avatar.width = 1;
 avatar.sprite = avatar_stand_img;
 
 avatar.correctStance = () => {
+    if(avatar.height !== 1 || !avatar.crouching || !avatar.blocked(0, -1)) avatar.time_crouched = 0;
     if(avatar.grasping && avatar.height === 2) {
-        avatar.time_crouched = 0;
+        avatar.height = 2;
         if(avatar.pullingup) {
             avatar.width = 2;
-            avatar.height = 2;
             avatar.sprite = avatar_pullup_img;
         } else {
             avatar.width = 1;
-            avatar.height = 2;
             avatar.sprite = avatar_grasp_img;
         }
     } else if((avatar.airtime > avatar.fell || avatar.airtime > 1 || avatar.jumping > 0) && !avatar.blocked(0, -1)) {
         if(!avatar.blocked(0, 1)) {
-            avatar.time_crouched = 0;
             avatar.width = 1;
             avatar.height = 2;
             avatar.sprite = avatar_jump_img;
@@ -126,20 +130,17 @@ avatar.correctStance = () => {
             avatar.width = 1;
             avatar.height = 1;
             avatar.sprite = avatar_crouch_img;
-            if(avatar.blocked(0, -1)) {avatar.time_crouched++} else avatar.time_crouched = 0;
+            if(avatar.blocked(0, -1)) avatar.time_crouched++;
             if(avatar.time_crouched >= avatar.stand_delay
             && !avatar.crouch_lock
             && !avatar.blocked(0, 1)
             && !avatar.zapped(0, 1)) {
                 avatar.crouch(2);
             }
-        } else {
-            if(!avatar.blocked(0, 1)) {
-                avatar.time_crouched = 0;
-                avatar.width = 1;
-                avatar.height = 2;
-                avatar.sprite = avatar_stand_img;
-            }
+        } else if(!avatar.blocked(0, 1)) {
+            avatar.width = 1;
+            avatar.height = 2;
+            avatar.sprite = avatar_stand_img;
         }
     }
     if(avatar.blocked(0, -1) || (avatar.grasping && avatar.height === 2)) {
@@ -147,10 +148,7 @@ avatar.correctStance = () => {
         avatar.jumping = 0;
         avatar.fell = 0;
     }
-    if(avatar.zapped(0, 0)
-    || (avatar.height === 2 && avatar.zapped(0, 1))) {
-        avatar.dies();
-    }
+    if(avatar.zapped(0, 0) || (avatar.height === 2 && avatar.zapped(0, 1))) avatar.dies();
 }
 avatar.queueFunction = (push, function_to_queue, queue_context, queue_paramaters) => {
     let wrapFunction = (function_to_wrap, wrap_context, wrap_paramaters) => {return function() {function_to_wrap.apply(wrap_context, wrap_paramaters)}};
@@ -397,24 +395,24 @@ document.addEventListener(`keydown`, keyDown);
 document.addEventListener(`keyup`, keyUp);
 
 stage1 = [
-    `bbbbbbb.....................................`,
-    `bbbbbbb.....................................`,
-    `bbbbbbb.....................................`,
-    `bbbbbbb.....................................`,
-    `bbbbbbb................b....................`,
-    `bbbbbbb.....................................`,
-    `bbbbbbb.....................................`,
-    `bbbbbbb...........b.b.b.....................`,
-    `bbbbbbb..........bb.........................`,
-    `bbbbbbb2........bbb1111111..................`,
-    `bbbbbbb........bbbbbbbbbbb..................`,
-    `b....3........bbb333........................`,
-    `b.........1..bbbb...........................`,
-    `b.bbbbbbbbbbbbbbb.b.........................`,
-    `b........4bb......b.....b...................`,
-    `b.........bb......b....bb...................`,
-    `b....s....bb......bbbbbbb111................`,
-    `bbbbbbbbbbbbbbbbbbbbbbbbbbbb................`
+    `bbbbbbb.....................`,
+    `bbbbbbb.....................`,
+    `bbbbbbb.....................`,
+    `bbbbbbb.....................`,
+    `bbbbbbb................b....`,
+    `bbbbbbb.....................`,
+    `bbbbbbb.....................`,
+    `bbbbbbb...........b.b.b.....`,
+    `bbbbbbb..........bb.........`,
+    `bbbbbbb2........bbb1111111..`,
+    `bbbbbbb........bbbbbbbbbbb..`,
+    `b....3........bbb333........`,
+    `b.........1..bbbb...........`,
+    `b.bbbbbbbbbbbbbbb.b.........`,
+    `b........4bb......b.....b...`,
+    `b.........bb......b....bb...`,
+    `b....s....bb......bbbbbbb111`,
+    `bbbbbbbbbbbbbbbbbbbbbbbbbbbb`
 ]
 stage.inputStringArray(stage1);
 
