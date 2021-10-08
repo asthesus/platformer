@@ -2,6 +2,7 @@ const htmlCanvas = document.getElementById(`c`);
 const ctx = htmlCanvas.getContext(`2d`);
 const blue_bricks_img = document.getElementById(`blue_bricks_png`);
 const spikes_img = document.getElementById(`spikes_png`);
+const moving_block_img = document.getElementById(`moving_block_png`);
 // const stained_glass_moon_img = document.getElementById(`stained_glass_moon_png`);
 const avatar_crouch_img = document.getElementById(`avatar_crouch_png`);
 const avatar_jump_img = document.getElementById(`avatar_jump_png`);
@@ -29,42 +30,83 @@ canvas.clear = () => {
 
 stage = {};
 stage.matrix = [];
+stage.input = [];
 stage.width = 0;
 stage.height = 0;
 stage.spawn = {x: 0, y:0};
 
-stage.isTile = (tile) => {if(tile === `b` || tile === `1` || tile === `2` || tile === `3` || tile === `4`) {return true} else return false};
+stage.movingBlocks = () => {
+    let move_list = [];
+    for(let iy = 0; iy < stage.height; iy++) {
+        for(let ix = 0; ix < stage.width; ix++) {
+            if(stage.matrix[iy][ix] === `n` || stage.matrix[iy][ix] === `e` || stage.matrix[iy][ix] === `s` || stage.matrix[iy][ix] === `w`) {
+                let block_position = {x: ix, y: iy};
+                let block_direction;
+                if(stage.matrix[iy][ix] === `n`) block_direction = 0;
+                if(stage.matrix[iy][ix] === `e`) block_direction = 1;
+                if(stage.matrix[iy][ix] === `s`) block_direction = 2;
+                if(stage.matrix[iy][ix] === `w`) block_direction = 3;
+                move_list.push([block_position, block_direction]);
+            }
+        }
+    }
+    while(move_list.length > 0) {
+        let block_position = move_list[0][0];
+        let block_direction = move_list[0][1];
+        stage.shiftTile(block_position, 1, block_direction);
+        move_list.shift();
+    }
+}
+stage.isTile = (tile) => {if(tile === `b` || tile === `n` || tile === `e` || tile === `s` || tile === `w` || tile === `1` || tile === `2` || tile === `3` || tile === `4`) {return true} else return false};
 stage.shiftTile = (tile_position, force, direction) => {
     let tile_x = tile_position.x;
     let tile_y = tile_position.y;
-    let tile_list = [];
-    let direction_x = 0;
-    let direction_y = 0;
-    if(direction === 0) {direction_y = 1}
-    else if(direction === 1) {direction_x = -1}
-    else if(direction === 2) {direction_y = -1}
-    else {direction_x = 1};
-    for(let i = 0; i <= force; i++) {
-        if(stage.matrix[tile_y + (direction_y * i)] === undefined
-        || stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)] === undefined) {[i, force] = [force + 1, i - 1]}
-        else if(!stage.isTile(stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)])) {[i, force] = [force + 1, i]}
-        else tile_list[i] = stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)];
-    }
-    let avatar_on_top = false;
-    let avatar_in_way = false;
-    if(!stage.isTile(tile_list[force])) {
-        if((avatar.position.y === tile_y && avatar.position.x === tile_x + (direction_x * force))
-        || (avatar.height === 2 && avatar.position.y + 1 === tile_y && avatar.position.x === tile_x + (direction_x * force))) avatar_in_way = true;
-        for(let i = 0; i < force; i++) {if(avatar.position.x === tile_x + (direction_x * i) && avatar.position.y === tile_y + (direction_y * i) + 1) avatar_on_top = true}
-        for(let i = force; i > 0; i--) {
-            stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)] = stage.matrix[tile_y + (direction_y * (i - 1))][tile_x + (direction_x * (i - 1))];
+    if(stage.matrix[tile_y] !== undefined && stage.isTile(stage.matrix[tile_y][tile_x])) {
+        let tile_list = [];
+        let direction_x = 0;
+        let direction_y = 0;
+        if(direction === 0) {direction_y = 1}
+        else if(direction === 1) {direction_x = -1}
+        else if(direction === 2) {direction_y = -1}
+        else {direction_x = 1};
+        for(let i = 0; i <= force; i++) {
+            // if(stage.matrix[tile_y + (direction_y * i)] === undefined) stage.matrix[tile_y + (direction_y * i)] = [];
+            // if(!stage.isTile(stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)])) {[i, force] = [force + 1, i]}
+            // else tile_list[i] = stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)];
+            if(stage.matrix[tile_y + (direction_y * i)] === undefined
+            || stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)] === undefined) {[i, force] = [force + 1, i - 1]}
+            else if(!stage.isTile(stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)])) {[i, force] = [force + 1, i]}
+            else tile_list[i] = stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)];
         }
-        stage.matrix[tile_y][tile_x] = `.`;
-        if((avatar_on_top || avatar_in_way) && !avatar.blocked(direction_x, direction_y)) {avatar.position.x += direction_x; avatar.position.y += direction_y};
-        avatar.correctStance();
-    }
+        if(!stage.isTile(tile_list[force])) {
+            let avatar_on_top = false;
+            let avatar_in_way = false;
+            let avatar_holding_on = false;
+            if((avatar.position.y === tile_y && avatar.position.x === tile_x + (direction_x * force))
+            || (avatar.height === 2 && avatar.position.y + 1 === tile_y && avatar.position.x === tile_x + (direction_x * force))) avatar_in_way = true;
+            for(let i = 0; i < force; i++) {if(avatar.position.x === tile_x + (direction_x * i) && avatar.position.y === tile_y + (direction_y * i) + 1) avatar_on_top = true}
+            if(avatar.grasping && (avatar.position.x === tile_x - avatar.facing) && ((avatar.pullingup && avatar.position.y === tile_y) || (!avatar.pullingup && avatar.position.y === tile_y - 1))) avatar_holding_on = true;
+            for(let i = force; i > 0; i--) {stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)] = stage.matrix[tile_y + (direction_y * (i - 1))][tile_x + (direction_x * (i - 1))]};
+            stage.matrix[tile_y][tile_x] = `.`;
+            if(avatar_holding_on && !avatar_in_way) {
+                if(direction_y === 1) {
+                    if(avatar.blocked(0, 2)) {
+                        if(avatar.pullingup) {avatar.pullup(0)}
+                        else avatar.grasp(0);
+                    } else avatar.position.y++;
+                } else if(direction_y === -1) {if(!avatar.blocked(0, -1)) avatar.position.y--}
+                else if(!avatar.blocked(direction_x, 0)) avatar.position.x += direction_x;
+            } else if(avatar_in_way || avatar_on_top) {
+                if(direction_y === 1 && avatar.height === 2 && avatar.blocked(0, 2)) {avatar.crouch(1); avatar.height = 1; avatar.position.y++}
+                else if(direction_y === -1 && avatar.height === 2 && avatar.blocked(0, -1)) {avatar.crouch(1); avatar.height = 1}
+                else if(!avatar.blocked(direction_x, direction_y)) {avatar.position.x += direction_x; avatar.position.y += direction_y};
+            }
+            avatar.correctStance();
+        }
+    } 
 }
 stage.inputStringArray = (string_array) => {
+    stage.input = string_array;
     stage.matrix = [];
     stage.width = string_array[0].length;
     stage.height = string_array.length;
@@ -75,7 +117,7 @@ stage.inputStringArray = (string_array) => {
             let by = stage.height - iy - 1;
             string = string_array[iy];
             stage.matrix[by][bx] = string.charAt(ix);
-            if(string.charAt(ix) === `s`) {
+            if(string.charAt(ix) === `a`) {
                 stage.spawn.x = bx;
                 stage.spawn.y = by;
             }
@@ -91,6 +133,22 @@ stage.draw = () => {
             let dimension_x = canvas.dimension;
             let dimension_y = canvas.dimension;
             if(stage.matrix[iy][ix] === `b`) {tile = blue_bricks_img}
+            else if(stage.matrix[iy][ix] === `n`) {tile = moving_block_img}
+            else if(stage.matrix[iy][ix] === `e`) {
+                tile = moving_block_img;
+                ctx.rotate(Math.PI * 0.5);
+                [print_x, print_y] = [print_y, print_x * -1];
+            }
+            else if(stage.matrix[iy][ix] === `s`) {
+                tile = moving_block_img;
+                ctx.rotate(Math.PI * 1);
+                [print_x, print_y] = [print_x * -1, print_y * -1];
+            }
+            else if(stage.matrix[iy][ix] === `w`) {
+                tile = moving_block_img;
+                ctx.rotate(Math.PI * 1.5);
+                [print_x, print_y] = [print_y * -1, print_x];
+            }
             else if(stage.matrix[iy][ix] === `1`) {tile = spikes_img}
             else if(stage.matrix[iy][ix] === `2`) {
                 tile = spikes_img;
@@ -139,13 +197,30 @@ avatar.height = 2;
 avatar.width = 1;
 avatar.sprite = avatar_stand_img;
 
+avatar.pullup = (mode) => {if(mode === 0) {avatar.pullingup = false} else if(mode === 1) {avatar.pullingup = true}};
+avatar.crouch = (mode) => {if(mode === 1) {avatar.crouching = true} else if(mode === 2) {avatar.crouching = false}};
+avatar.ascend = () => {if(!avatar.blocked(0,1) && !avatar.blocked(0,2)) avatar.position.y++};
+avatar.delayAction = (duration) => {avatar.delay_action += duration};
 avatar.correctStance = () => {
-    if(avatar.height === 2 && avatar.blocked(0, 1)) {
-        avatar.crouch(1);
-        avatar.height = 1;
-        avatar.sprite = avatar_crouch_img;
+    if(avatar.height === 2) {
+        // if(avatar.blocked(0, 1) && !avatar.blocked(0, 0)) {
+        //     avatar.grasp(0);
+        //     avatar.crouch(1);
+        //     avatar.height = 1;
+        //     avatar.sprite = avatar_crouch_img;
+        // }
+        // if(avatar.blocked(0, 0) && !avatar.blocked(0, 1)) {
+        //     avatar.grasp(0);
+        //     avatar.crouch(1);
+        //     avatar.height = 1;
+        //     avatar.sprite = avatar_crouch_img;
+        //     avatar.position.y++;
+        // }
+        if(avatar.grasping) {
+            if(avatar.pullingup) {if(!avatar.blocked(avatar.facing, 0) || avatar.blocked(avatar.facing, 1)) avatar.grasp(0)}
+            else if(!avatar.blocked(avatar.facing, 1) || avatar.blocked(avatar.facing, 2)) avatar.grasp(0);
+        }
     }
-    if(avatar.height !== 1 || !avatar.crouching || !avatar.blocked(0, -1)) avatar.time_crouched = 0;
     if(avatar.grasping && avatar.height === 2) {
         avatar.height = 2;
         if(avatar.pullingup) {
@@ -184,7 +259,8 @@ avatar.correctStance = () => {
         avatar.jumping = 0;
         avatar.fell = 0;
     }
-    if(avatar.blocked(0, 0) || avatar.zapped(0, 0) || (avatar.height === 2 && avatar.zapped(0, 1))) avatar.dies();
+    if(avatar.height !== 1 || !avatar.crouching || !avatar.blocked(0, -1)) avatar.time_crouched = 0;
+    if(avatar.blocked(0, 0) || avatar.zapped(0, 0) || (avatar.height === 2 && (avatar.zapped(0, 1) || avatar.blocked(0, 1)))) avatar.dies();
 }
 avatar.queueFunction = (push, function_to_queue, queue_context, queue_paramaters) => {
     let wrapFunction = (function_to_wrap, wrap_context, wrap_paramaters) => {return function() {function_to_wrap.apply(wrap_context, wrap_paramaters)}};
@@ -194,17 +270,20 @@ avatar.queueFunction = (push, function_to_queue, queue_context, queue_paramaters
 avatar.blocked = (direction, height) => {
     if(stage.matrix[avatar.position.y + height] === undefined
     || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === undefined) {return false}
-    else if (stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `b`) {return true}
-    else return false;
+    else {
+        let tile = stage.matrix[avatar.position.y + height][avatar.position.x + direction];
+        if(tile === `b` || tile === `n` || tile === `e` || tile === `s` || tile === `w`) {return true}
+        else return false;
+    }
 }
 avatar.zapped = (direction, height) => {
     if(stage.matrix[avatar.position.y + height] === undefined
     || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === undefined) {return false}
-    else if (stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `1`
-    || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `2`
-    || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `3`
-    || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === `4`) {return true}
-    else return false;
+    else {
+        let tile = stage.matrix[avatar.position.y + height][avatar.position.x + direction];
+        if(tile === `1` || tile === `2` || tile === `3` || tile === `4`) {return true}
+        else return false;
+    }
 }
 avatar.draw = () => {
     let print_x = canvas.center.x - canvas.dimension_half;
@@ -216,9 +295,8 @@ avatar.draw = () => {
         ctx.scale(-1, 1);
     }
     ctx.drawImage(avatar.sprite, print_x, print_y, dimension_x, dimension_y);
-    if(avatar.facing === 1) {ctx.resetTransform()};
+    if(avatar.facing === 1) ctx.resetTransform();
 }
-avatar.ascend = () => {if(!avatar.blocked(0,1) && !avatar.blocked(0,2)) avatar.position.y++};
 avatar.gravity = () => {
     if(!avatar.grasping) {
         if(!avatar.blocked(0, -1)) {
@@ -231,8 +309,6 @@ avatar.gravity = () => {
         if(!avatar.crouching && (avatar.airtime > 1 || avatar.jumping > 0)) avatar.queueFunction(false, avatar.crouch, this, [1]);
     }
 }
-avatar.crouch = (mode) => {if(mode === 1) {avatar.crouching = true} else if(mode === 2) {avatar.crouching = false}};
-avatar.delayAction = (duration) => {avatar.delay_action += duration};
 avatar.grasp = (mode) => {
     if(mode === 0) {
         avatar.grasping = false;
@@ -242,7 +318,6 @@ avatar.grasp = (mode) => {
         avatar.crouching = false;
     }
 }
-avatar.pullup = (mode) => {if(mode === 0) {avatar.pullingup = false} else if(mode === 1) {avatar.pullingup = true}};
 avatar.jump = (power) => {
     if(power === 0
     && avatar.crouching
@@ -352,6 +427,7 @@ avatar.move = (direction) => {
         // }
         avatar.position.x += direction;
     }
+    avatar.correctStance();
 }
 avatar.dies = () => {
     avatar.alive = false;
@@ -359,6 +435,7 @@ avatar.dies = () => {
     avatar.position.y = stage.spawn.y;
 }
 avatar.resurrect = (new_position) => {
+    stage.inputStringArray(stage.input);
     avatar.facing = -1;
     avatar.crouching = false;
     avatar.crouch_lock = false;
@@ -375,26 +452,30 @@ avatar.resurrect = (new_position) => {
 }
 
 const saved_input = [];
-second = 0;
+let gravity_second = 0;
+let moving_blocks_second = 0;
 const gravity_tick = 3;
-time_frozen = false;
+const moving_blocks_tick = 40;
+let time_frozen = false;
 time = () => {
     if(!time_frozen) {
         if(avatar.delay_action === 0) {if(saved_input.length > 0) (saved_input.shift())()} else avatar.delay_action--;
-        if(second === gravity_tick) {second = 0; avatar.gravity()};
+        if(gravity_second === gravity_tick) {gravity_second = 0; avatar.gravity()};
+        if(moving_blocks_second === moving_blocks_tick) {moving_blocks_second = 0; stage.movingBlocks()};
         if(!avatar.alive) {avatar.resurrect(stage.spawn)};
         avatar.correctStance();
         canvas.clear();
         stage.draw();
         avatar.draw();
-        second++;
+        gravity_second++;
+        moving_blocks_second++;
     }
     window.requestAnimationFrame(time);
 }
 
-arrow_left_held = false;
-arrow_right_held = false;
-shift_held = false;
+let arrow_left_held = false;
+let arrow_right_held = false;
+let shift_held = false;
 function keyDown(e) {
     if(e.key === `ArrowLeft` || e.key === `a` || e.key === `A`) {arrow_left_held = true; avatar.queueFunction(true, avatar.move, this, [1])}
     else if(e.key === `ArrowRight` || e.key === `d` || e.key === `D`) {arrow_right_held = true; avatar.queueFunction(true, avatar.move, this, [-1])}
@@ -423,7 +504,7 @@ function keyUp(e) {
 document.addEventListener(`keydown`, keyDown);
 document.addEventListener(`keyup`, keyUp);
 
-stage1 = [
+let stage1 = [
     `bbbbbbb.....................`,
     `bbbbbbb.....................`,
     `bbbbbbb.....................`,
@@ -435,13 +516,23 @@ stage1 = [
     `bbbbbbb..........bb.........`,
     `bbbbbbb2........bbb1111111..`,
     `bbbbbbb........bbbbbbbbbbb..`,
-    `b....3........bbb333........`,
+    `b3...3........bbb333........`,
     `b.........1..bbbb...........`,
     `b.bbbbbbbbbbbbbbb.b.........`,
     `b........4bb......b.....b...`,
     `b.........bb......b....bb...`,
-    `b....s....bb......bbbbbbb111`,
+    `b....a....bb......bbbbbbb111`,
     `bbbbbbbbbbbbbbbbbbbbbbbbbbbb`
+]
+let stage2 = [
+    `................................`,
+    `......e.........................`,
+    `.........a..........w...........`,
+    `.........bee........b...........`,
+    `...........n....................`,
+    `................................`,
+    `.111111111111111111111111111111.`,
+    `.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.`
 ]
 stage.inputStringArray(stage1);
 
@@ -453,4 +544,5 @@ time();
 
 // to do:
 //
+// fix blocks moving in unicen
 // treat "undefined" as normal free spaces. this allows levels to be made without adding extra space at the top for jumping, and makes the skybox unlimited.
