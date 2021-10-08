@@ -33,6 +33,37 @@ stage.width = 0;
 stage.height = 0;
 stage.spawn = {x: 0, y:0};
 
+stage.isTile = (tile) => {if(tile === `b` || tile === `1` || tile === `2` || tile === `3` || tile === `4`) {return true} else return false};
+stage.shiftTile = (tile_position, force, direction) => {
+    let tile_x = tile_position.x;
+    let tile_y = tile_position.y;
+    let tile_list = [];
+    let direction_x = 0;
+    let direction_y = 0;
+    if(direction === 0) {direction_y = 1}
+    else if(direction === 1) {direction_x = -1}
+    else if(direction === 2) {direction_y = -1}
+    else {direction_x = 1};
+    for(let i = 0; i <= force; i++) {
+        if(stage.matrix[tile_y + (direction_y * i)] === undefined
+        || stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)] === undefined) {[i, force] = [force + 1, i - 1]}
+        else if(!stage.isTile(stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)])) {[i, force] = [force + 1, i]}
+        else tile_list[i] = stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)];
+    }
+    let avatar_on_top = false;
+    let avatar_in_way = false;
+    if(!stage.isTile(tile_list[force])) {
+        if((avatar.position.y === tile_y && avatar.position.x === tile_x + (direction_x * force))
+        || (avatar.height === 2 && avatar.position.y + 1 === tile_y && avatar.position.x === tile_x + (direction_x * force))) avatar_in_way = true;
+        for(let i = 0; i < force; i++) {if(avatar.position.x === tile_x + (direction_x * i) && avatar.position.y === tile_y + (direction_y * i) + 1) avatar_on_top = true}
+        for(let i = force; i > 0; i--) {
+            stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)] = stage.matrix[tile_y + (direction_y * (i - 1))][tile_x + (direction_x * (i - 1))];
+        }
+        stage.matrix[tile_y][tile_x] = `.`;
+        if((avatar_on_top || avatar_in_way) && !avatar.blocked(direction_x, direction_y)) {avatar.position.x += direction_x; avatar.position.y += direction_y};
+        avatar.correctStance();
+    }
+}
 stage.inputStringArray = (string_array) => {
     stage.matrix = [];
     stage.width = string_array[0].length;
@@ -109,6 +140,11 @@ avatar.width = 1;
 avatar.sprite = avatar_stand_img;
 
 avatar.correctStance = () => {
+    if(avatar.height === 2 && avatar.blocked(0, 1)) {
+        avatar.crouch(1);
+        avatar.height = 1;
+        avatar.sprite = avatar_crouch_img;
+    }
     if(avatar.height !== 1 || !avatar.crouching || !avatar.blocked(0, -1)) avatar.time_crouched = 0;
     if(avatar.grasping && avatar.height === 2) {
         avatar.height = 2;
@@ -148,7 +184,7 @@ avatar.correctStance = () => {
         avatar.jumping = 0;
         avatar.fell = 0;
     }
-    if(avatar.zapped(0, 0) || (avatar.height === 2 && avatar.zapped(0, 1))) avatar.dies();
+    if(avatar.blocked(0, 0) || avatar.zapped(0, 0) || (avatar.height === 2 && avatar.zapped(0, 1))) avatar.dies();
 }
 avatar.queueFunction = (push, function_to_queue, queue_context, queue_paramaters) => {
     let wrapFunction = (function_to_wrap, wrap_context, wrap_paramaters) => {return function() {function_to_wrap.apply(wrap_context, wrap_paramaters)}};
@@ -182,9 +218,7 @@ avatar.draw = () => {
     ctx.drawImage(avatar.sprite, print_x, print_y, dimension_x, dimension_y);
     if(avatar.facing === 1) {ctx.resetTransform()};
 }
-avatar.ascend = () => {
-    if(!avatar.blocked(0,1) && !avatar.blocked(0,2)) avatar.position.y++;
-}
+avatar.ascend = () => {if(!avatar.blocked(0,1) && !avatar.blocked(0,2)) avatar.position.y++};
 avatar.gravity = () => {
     if(!avatar.grasping) {
         if(!avatar.blocked(0, -1)) {
@@ -198,9 +232,7 @@ avatar.gravity = () => {
     }
 }
 avatar.crouch = (mode) => {if(mode === 1) {avatar.crouching = true} else if(mode === 2) {avatar.crouching = false}};
-avatar.delayAction = (duration) => {
-    avatar.delay_action += duration;
-}
+avatar.delayAction = (duration) => {avatar.delay_action += duration};
 avatar.grasp = (mode) => {
     if(mode === 0) {
         avatar.grasping = false;
@@ -236,9 +268,7 @@ avatar.jump = (power) => {
             if(can_jump) {
                 avatar.position.y++;
                 avatar.jumping = power;
-                for(let i = 0; i < power; i++) {
-                    avatar.queueFunction(false, avatar.ascend, this, []);
-                }
+                for(let i = 0; i < power; i++) {avatar.queueFunction(false, avatar.ascend, this, [])};
             }  
         }
         if(power > 0 && !avatar.crouching) {avatar.queueFunction(false, avatar.crouch, this, [1])};
@@ -378,13 +408,12 @@ function keyDown(e) {
             if(avatar.pullingup) {
                 avatar.position.y--;
                 avatar.pullup(0);
-            }
-            else if(avatar.grasping) {avatar.grasp(0)};
+            } else if(avatar.grasping) avatar.grasp(0);
         }
     }
     else if(e.key === `Shift`) {shift_held = true}
     else if(e.key === `g`) {avatar.queueFunction(true, avatar.delayAction, this, [1])}
-    else if(e.key === ` `) time_frozen = !time_frozen;
+    // else if(e.key === ` `) time_frozen = !time_frozen;
 }
 function keyUp(e) {
     if(e.key === `ArrowLeft`) {arrow_left_held = false}
