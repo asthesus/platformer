@@ -59,25 +59,26 @@ stage.height = 0;
 stage.spawn = {x: 0, y:0};
 
 stage.movingBlocks = () => {
-    let move_list = [];
+    let north_list = [];
+    let east_list = [];
+    let south_list = [];
+    let west_list = [];
     for(let iy = 0; iy < stage.height; iy++) {
         for(let ix = 0; ix < stage.width; ix++) {
             if(stage.matrix[iy][ix] === `n` || stage.matrix[iy][ix] === `e` || stage.matrix[iy][ix] === `s` || stage.matrix[iy][ix] === `w`) {
                 let block_position = {x: ix, y: iy};
-                let block_direction;
-                if(stage.matrix[iy][ix] === `n`) block_direction = 0;
-                if(stage.matrix[iy][ix] === `e`) block_direction = 1;
-                if(stage.matrix[iy][ix] === `s`) block_direction = 2;
-                if(stage.matrix[iy][ix] === `w`) block_direction = 3;
-                move_list.push([block_position, block_direction]);
+                if(stage.matrix[iy][ix] === `n`) {north_list.push(block_position)};
+                if(stage.matrix[iy][ix] === `e`) {east_list.push(block_position)};
+                if(stage.matrix[iy][ix] === `s`) {south_list.push(block_position)};
+                if(stage.matrix[iy][ix] === `w`) {west_list.push(block_position)};
             }
         }
     }
-    while(move_list.length > 0) {
-        let block_position = move_list[0][0];
-        let block_direction = move_list[0][1];
-        stage.shiftTile(block_position, 1, block_direction);
-        move_list.shift();
+    while(north_list.length + east_list.length + south_list.length + west_list.length > 0) {
+        if(north_list.length > 0) {stage.shiftTile(north_list.pop(), 1, 0)};
+        if(east_list.length > 0) {stage.shiftTile(east_list.shift(), 1, 1)};
+        if(south_list.length > 0) {stage.shiftTile(south_list.shift(), 1, 2)};
+        if(west_list.length > 0) {stage.shiftTile(west_list.pop(), 1, 3)};
     }
 }
 stage.isTile = (tile) => {if(tile === `b` || tile === `n` || tile === `e` || tile === `s` || tile === `w` || tile === `1` || tile === `2` || tile === `3` || tile === `4`) {return true} else return false};
@@ -619,7 +620,21 @@ let stage2 = [
     `bb.a.bbbbbbb.x.bb`,
     `bbbbbbbbbbbbbbbbb`
 ]
-stage.inputStringArray(stage2);
+let stage3 = [
+    `bbbbbbbbbbbbbbbbb`,
+    `b...............b`,
+    `b...............b`,
+    `b...............b`,
+    `b...............b`,
+    `b...............b`,
+    `b.n.............b`,
+    `b.n.............b`,
+    `b.n.......eee...b`,
+    `b...............b`,
+    `b.......a.......b`,
+    `bbbbbbbbbbbbbbbbb`
+]
+stage.inputStringArray(stage3);
 
 avatar.resurrect(stage.spawn);
 
