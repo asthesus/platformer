@@ -89,9 +89,6 @@ stage.shiftTile = (tile_position, force, direction) => {
         else if(direction === 2) {direction_y = -1}
         else {direction_x = 1};
         for(let i = 0; i <= force; i++) {
-            // if(stage.matrix[tile_y + (direction_y * i)] === undefined) stage.matrix[tile_y + (direction_y * i)] = [];
-            // if(!stage.isTile(stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)])) {[i, force] = [force + 1, i]}
-            // else tile_list[i] = stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)];
             if(stage.matrix[tile_y + (direction_y * i)] === undefined
             || stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)] === undefined) {[i, force] = [force + 1, i - 1]}
             else if(!stage.isTile(stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)])) {[i, force] = [force + 1, i]}
@@ -117,7 +114,6 @@ stage.shiftTile = (tile_position, force, direction) => {
                 else if(!avatar.blocked(direction_x, 0)) avatar.position.x += direction_x;
             } else if(avatar_in_way || avatar_on_top) {
                 if(direction_y === 1 && avatar.height === 2 && avatar.blocked(0, 2)) {avatar.crouch(1); avatar.height = 1; avatar.position.y++}
-                else if(direction_y === -1 && avatar.height === 2 && avatar.blocked(0, -1)) {avatar.crouch(1); avatar.height = 1}
                 else if(!avatar.blocked(direction_x, direction_y)
                 && (avatar.height === 1 || !avatar.blocked(direction_x, direction_y + 1))
                 && !(avatar.grasping && avatar_on_top && direction_y === -1)) {
@@ -198,11 +194,6 @@ stage.draw = () => {
             } else if(stage.matrix[iy][ix] === `k`) {
                 tile = key_img;
             }
-            // else if(stage.matrix[iy][ix] === `g`) {
-            //     tile = stained_glass_moon_img;
-            //     dimension_x *= 2;
-            //     dimension_y *= 4;
-            // }
             print_x -= canvas.dimension_half;
             print_y -= canvas.dimension_half;
             if(tile !== 0) ctx.drawImage(tile, print_x, print_y, dimension_x, dimension_y);
@@ -276,7 +267,8 @@ avatar.correctStance = () => {
             avatar.sprite = avatar_jump_img;
         }
     } else {
-        if(avatar.crouching) {
+        if(avatar.crouching || (avatar.height === 2 && avatar.blocked(0, 1))) {
+            avatar.crouching = true;
             avatar.width = 1;
             avatar.height = 1;
             avatar.sprite = avatar_crouch_img;
@@ -287,7 +279,7 @@ avatar.correctStance = () => {
             && !avatar.zapped(0, 1)) {
                 avatar.crouch(2);
             }
-        } else if(!avatar.blocked(0, 1)) {
+        } else {
             avatar.width = 1;
             avatar.height = 2;
             avatar.sprite = avatar_stand_img;
@@ -566,12 +558,12 @@ function keyDown(e) {
             }
         }
         else if(e.key === `g`) {avatar.queueFunction(true, avatar.delayAction, this, [1])}
+        else if(e.key === ` `) time_frozen = !time_frozen;
     } else {
         avatar.resurrect(stage.spawn);
     }
     if(e.key === `Shift`) {shift_held = true}
     // if(e.key === `q`) {console.log(html_stage_input.innerHTML)};
-    // else if(e.key === ` `) time_frozen = !time_frozen;
 }
 function keyUp(e) {
     if(e.key === `ArrowLeft`) {arrow_left_held = false}
@@ -621,10 +613,10 @@ let stage3 = [
     `b...............b`,
     `b...............b`,
     `b...............b`,
-    `b...............b`,
-    `b.n.............b`,
-    `b.n.............b`,
-    `b.n.......eee...b`,
+    `b.............s.b`,
+    `b.n...........s.b`,
+    `b.n...........s.b`,
+    `b.n.......eee.s.b`,
     `b...............b`,
     `b.......a.......b`,
     `bbbbbbbbbbbbbbbbb`
@@ -639,5 +631,4 @@ time();
 
 // to do:
 //
-// fix blocks moving in unicen
 // treat "undefined" as normal free spaces. this allows levels to be made without adding extra space at the top for jumping, and makes the skybox unlimited.
