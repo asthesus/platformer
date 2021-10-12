@@ -629,7 +629,7 @@ let stage3 = [
     `b.......a.......b`,
     `bbbbbbbbbbbbbbbbb`
 ]
-stage.inputStringArray(stage3);
+stage.inputStringArray(stage2);
 
 avatar.resurrect(stage.spawn);
 
