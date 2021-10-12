@@ -57,25 +57,6 @@ stage.width = 0;
 stage.height = 0;
 stage.spawn = {x: 0, y:0};
 
-// stage.moveMovingBlocks = () => {
-//     let blocks_list = [];
-//     blocks_list[0] = [];
-//     blocks_list[1] = [];
-//     blocks_list[2] = [];
-//     blocks_list[3] = [];
-//     for(let iy = 0; iy < stage.height; iy++) {
-//         for(let ix = 0; ix < stage.width; ix++) {
-//             if(stage.matrix[iy][ix] === `n`) {blocks_list[0].push({x: ix, y: iy})}
-//             else if(stage.matrix[iy][ix] === `e`) {blocks_list[1].push({x: ix, y: iy})}
-//             else if(stage.matrix[iy][ix] === `s`) {blocks_list[2].push({x: ix, y: iy})}
-//             else if(stage.matrix[iy][ix] === `w`) {blocks_list[3].push({x: ix, y: iy})};
-//         }
-//     }
-//     while(blocks_list[0].length > 0) {stage.shiftTile(blocks_list[0].pop(), 1, 0)};
-//     while(blocks_list[2].length > 0) {stage.shiftTile(blocks_list[2].shift(), 1, 2)};
-//     while(blocks_list[1].length > 0) {stage.shiftTile(blocks_list[1].shift(), 1, 1)};
-//     while(blocks_list[3].length > 0) {stage.shiftTile(blocks_list[3].pop(), 1, 3)};
-// }
 stage.moveMovingBlocks = (direction) => {
     let blocks_list = [];
     let tile;
@@ -91,7 +72,14 @@ stage.moveMovingBlocks = (direction) => {
     if(direction === 0 || direction === 3) {while(blocks_list.length > 0) {stage.shiftTile(blocks_list.pop(), 1, direction)}}
     else {while(blocks_list.length > 0) {stage.shiftTile(blocks_list.shift(), 1, direction)}};
 }
-stage.isTile = (tile) => {if(tile === `b` || tile === `n` || tile === `e` || tile === `s` || tile === `w` || tile === `1` || tile === `2` || tile === `3` || tile === `4`) {return true} else return false};
+stage.isTile = (tile) => {if(
+    tile === `b` || tile === `n` ||
+    tile === `e` || tile === `s` ||
+    tile === `w` || tile === `1` ||
+    tile === `2` || tile === `3` ||
+    tile === `4`)
+    {return true} else return false;
+}
 stage.shiftTile = (tile_position, force, direction) => {
     let tile_x = tile_position.x;
     let tile_y = tile_position.y;
@@ -187,15 +175,9 @@ stage.draw = () => {
             //     ctx.rotate(Math.PI * 1.5);
             //     [print_x, print_y] = [print_y * -1, print_x];
             // }
-            else if(stage.matrix[iy][ix] === `n`) {
-                tile = moving_block_img;
-            }
-            else if(stage.matrix[iy][ix] === `e`) {
-                tile = moving_block_img;
-            }
-            else if(stage.matrix[iy][ix] === `s`) {
-                tile = moving_block_img;
-            }
+            else if(stage.matrix[iy][ix] === `n`) {tile = moving_block_img}
+            else if(stage.matrix[iy][ix] === `e`) {tile = moving_block_img}
+            else if(stage.matrix[iy][ix] === `s`) {tile = moving_block_img}
             else if(stage.matrix[iy][ix] === `w`) {
                 tile = moving_block_img;
                 ctx.scale(-1, 1);
@@ -239,6 +221,7 @@ avatar.falling = false;
 avatar.pullingup = false;
 avatar.delay_action = 0;
 avatar.stand_delay = 15;
+avatar.crouch_delay = 15;
 avatar.jump_delay = 10;
 avatar.airtime = 0;
 avatar.fell = 0;
@@ -246,6 +229,7 @@ avatar.jumping = 0;
 avatar.position.x = 0;
 avatar.position.y = 0;
 avatar.time_crouched = 0;
+avatar.time_standing = 0;
 avatar.height = 2;
 avatar.width = 1;
 avatar.keys = 0;
@@ -256,23 +240,21 @@ avatar.successful = false;
 avatar.canExit = () => {if(avatar.keys > 0 && avatar.height === 2 && stage.matrix[avatar.position.y][avatar.position.x] === `x`) {return true} else return false};
 avatar.pullup = (mode) => {if(mode === 0) {avatar.pullingup = false} else if(mode === 1) {avatar.pullingup = true}};
 avatar.crouch = (mode) => {if(mode === 1) {avatar.crouching = true} else if(mode === 2) {avatar.crouching = false}};
-avatar.ascend = () => {if(!avatar.blocked(0,1) && !avatar.blocked(0,2)) avatar.position.y++};
+avatar.stand = () => {
+    avatar.width = 1;
+    avatar.height = 2;
+    avatar.sprite = avatar_stand_img;
+    avatar.time_crouched = 0;
+}
+avatar.ascend = () => {
+    if(!avatar.blocked(0, 1) && !avatar.blocked(0, 2)) {
+        avatar.position.y++;
+        avatar.time_crouched = 0;
+    }
+}
 avatar.delayAction = (duration) => {avatar.delay_action += duration};
 avatar.correctStance = () => {
     if(avatar.height === 2) {
-        // if(avatar.blocked(0, 1) && !avatar.blocked(0, 0)) {
-        //     avatar.grasp(0);
-        //     avatar.crouch(1);
-        //     avatar.height = 1;
-        //     avatar.sprite = avatar_crouch_img;
-        // }
-        // if(avatar.blocked(0, 0) && !avatar.blocked(0, 1)) {
-        //     avatar.grasp(0);
-        //     avatar.crouch(1);
-        //     avatar.height = 1;
-        //     avatar.sprite = avatar_crouch_img;
-        //     avatar.position.y++;
-        // }
         if(avatar.grasping) {
             if(avatar.pullingup) {if(!avatar.blocked(avatar.facing, 0) || avatar.blocked(avatar.facing, 1)) avatar.grasp(0)}
             else if(!avatar.blocked(avatar.facing, 1) || avatar.blocked(avatar.facing, 2)) avatar.grasp(0);
@@ -291,42 +273,37 @@ avatar.correctStance = () => {
         avatar.width = 1;
         avatar.height = 2;
         avatar.sprite = avatar_jump_img;
-    } else if(avatar.crouching || (avatar.height === 2 && avatar.blocked(0, 1))) {
-        avatar.crouching = true;
+    } else if(avatar.crouching || avatar.height === 1 || (avatar.height === 2 && avatar.blocked(0, 1))) {
+        avatar.crouch(1);
         avatar.width = 1;
         avatar.height = 1;
         avatar.sprite = avatar_crouch_img;
-        if(avatar.blocked(0, -1)) avatar.time_crouched++;
-        if(avatar.time_crouched >= avatar.stand_delay
-        && !avatar.crouch_lock
-        && !avatar.blocked(0, 1)
-        && !avatar.zapped(0, 1)) {
-            avatar.crouch(2);
-        }
-    } else if(avatar.height === 2 && avatar.blocked(0, 0) && !avatar.blocked(0, 1)) {
-        avatar.crouching = true;
-        avatar.width = 1;
-        avatar.height = 1;
-        avatar.position.y++;
-        avatar.sprite = avatar_crouch_img;
-        if(avatar.blocked(0, -1)) avatar.time_crouched++;
-        if(avatar.time_crouched >= avatar.stand_delay
-        && !avatar.crouch_lock
-        && !avatar.blocked(0, 1)
-        && !avatar.zapped(0, 1)) {
-            avatar.crouch(2);
-        }
-    } else {
-        avatar.width = 1;
-        avatar.height = 2;
-        avatar.sprite = avatar_stand_img;
     }
+    // else {
+    //     avatar.width = 1;
+    //     avatar.height = 2;
+    //     avatar.sprite = avatar_stand_img;
+    // }
     if(avatar.blocked(0, -1) || (avatar.grasping && avatar.height === 2)) {
         avatar.airtime = 0;
         avatar.jumping = 0;
         avatar.fell = 0;
     }
-    if(avatar.height !== 1 || !avatar.crouching || !avatar.blocked(0, -1)) avatar.time_crouched = 0;
+    if(avatar.blocked(0, -1) && avatar.height === 1 && avatar.crouching) {
+        avatar.time_crouched++;
+    } else {
+        avatar.time_crouched = 0;
+        if(avatar.height === 2 && !avatar.crouching && !avatar.grasping) {avatar.time_standing++}
+        else avatar.time_standing = 0;
+    }
+    if(avatar.time_crouched >= avatar.stand_delay
+    && !avatar.crouch_lock
+    && !avatar.blocked(0, 1)
+    && !avatar.zapped(0, 1)) {
+        avatar.crouch(2);
+        avatar.stand();
+    }
+    if(avatar.height === 2 && !avatar.grasping && avatar.blocked(0, -1)) avatar.stand();
     if(avatar.blocked(0, 0) || avatar.zapped(0, 0) || (avatar.height === 2 && (avatar.zapped(0, 1) || avatar.blocked(0, 1)))) avatar.dies();
     if(stage.matrix[avatar.position.y][avatar.position.x] === `k`) {
         stage.matrix[avatar.position.y][avatar.position.x] = `.`;
@@ -347,8 +324,7 @@ avatar.blocked = (direction, height) => {
     || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === undefined) {return false}
     else {
         let tile = stage.matrix[avatar.position.y + height][avatar.position.x + direction];
-        if(tile === `b` || tile === `n` || tile === `e` || tile === `s` || tile === `w`) {return true}
-        else return false;
+        if(tile === `b` || tile === `n` || tile === `e` || tile === `s` || tile === `w`) {return true} else return false;
     }
 }
 avatar.zapped = (direction, height) => {
@@ -356,8 +332,7 @@ avatar.zapped = (direction, height) => {
     || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === undefined) {return false}
     else {
         let tile = stage.matrix[avatar.position.y + height][avatar.position.x + direction];
-        if(tile === `1` || tile === `2` || tile === `3` || tile === `4`) {return true}
-        else return false;
+        if(tile === `1` || tile === `2` || tile === `3` || tile === `4`) {return true} else return false;
     }
 }
 avatar.draw = () => {
@@ -411,7 +386,7 @@ avatar.jump = (power) => {
             if(avatar.pullingup && !avatar.blocked(0, -1)) {
                 avatar.grasp(0);
             } else if(!avatar.blocked(0, 2)) {
-                avatar.position.y++;
+                avatar.ascend();
                 avatar.pullup(1);
             }
         } else if(avatar.jumping === 0 && avatar.blocked(0, -1)) {
@@ -419,9 +394,9 @@ avatar.jump = (power) => {
             else {
                 let can_jump = true;
                 for(let i = 0; i <= power + 1; i++) if(avatar.blocked(0, i)) can_jump = false;
-                if(avatar.blocked(0, 1)) can_jump = false;
+                if(avatar.blocked(0, 1) || !avatar.blocked(0, -1)) can_jump = false;
                 if(can_jump) {
-                    avatar.position.y++;
+                    avatar.ascend();
                     avatar.jumping = power;
                     for(let i = 0; i < power; i++) {avatar.queueFunction(false, avatar.ascend, this, [])};
                 }  
@@ -516,8 +491,6 @@ avatar.dies = () => {
     if(avatar.alive) {
         canvas.deathScreen();
         avatar.alive = false;
-        avatar.position.x = stage.spawn.x;
-        avatar.position.y = stage.spawn.y;
     }
 }
 avatar.resurrect = (new_position) => {
@@ -540,6 +513,7 @@ avatar.resurrect = (new_position) => {
         avatar.age = 0;
         avatar.successful = false;
         avatar.alive = true;
+        avatar.sprite = avatar_stand_img;
     }
 }
 
@@ -614,7 +588,7 @@ function keyUp(e) {
 document.addEventListener(`keydown`, keyDown);
 document.addEventListener(`keyup`, keyUp);
 
-let stage1 = [
+let test1 = [
     `bbbbbbb.....................`,
     `bbbbbbb.....................`,
     `bbbbbbb.....................`,
@@ -634,7 +608,21 @@ let stage1 = [
     `b....a....bb......bbbbbbb111`,
     `bbbbbbbbbbbbbbbbbbbbbbbbbbbb`
 ]
-let stage2 = [
+let test2 = [
+    `bbbbbbbbbbbbbbbbb`,
+    `bsssb...........b`,
+    `b...b...........b`,
+    `b...b...........b`,
+    `b...b...........b`,
+    `b...b...........b`,
+    `b...b...........b`,
+    `b...b...........b`,
+    `b...b...........b`,
+    `b...b...........b`,
+    `b.a.............b`,
+    `bbbbbbbbbbbbbbbbb`
+]
+let stage1 = [
     `bbbbbbbbbbbbbbbbb`,
     `bbbbbb.....bbbbbb`,
     `bbbbbb..k..bbbbbb`,
@@ -648,19 +636,19 @@ let stage2 = [
     `bb.a.bbbbbbb.x.bb`,
     `bbbbbbbbbbbbbbbbb`
 ]
-let stage3 = [
+let stage2 = [
     `bbbbbbbbbbbbbbbbb`,
-    `b...............b`,
-    `b...............b`,
-    `b...............b`,
-    `b...............b`,
-    `b...............b`,
-    `b...............b`,
-    `b.........eee.s.b`,
-    `b.s...........s.b`,
-    `b.s.www.......s.b`,
-    `b.s.............b`,
-    `b........a......b`,
+    `bb.............bb`,
+    `bb.............bb`,
+    `bb.............bb`,
+    `b.......e.......b`,
+    `bb.............bb`,
+    `b.....e.........b`,
+    `bb.............bb`,
+    `b...e...........b`,
+    `bba............bb`,
+    `b.e.............b`,
+    `bb1111111111111bb`,
     `bbbbbbbbbbbbbbbbb`
 ]
 stage.inputStringArray(stage2);
@@ -672,6 +660,8 @@ avatar.draw();
 time();
 
 // to do:
+//
+// background layer is procedurally generated according to what is present in the foreground
 //
 // make different directions of moving blocks start moving at different times, with the same overall speed, to make them easier to navigate when there are a bunch together all going in different directions
 //
