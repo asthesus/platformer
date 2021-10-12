@@ -651,7 +651,7 @@ let stage2 = [
     `bb1111111111111bb`,
     `bbbbbbbbbbbbbbbbb`
 ]
-stage.inputStringArray(stage2);
+stage.inputStringArray(stage1);
 
 avatar.resurrect(stage.spawn);
 
