@@ -3,13 +3,13 @@ html, body{
     height: 100%;
     margin: 0px;
     border: 0;
-    overflow: hidden;
+    /* overflow: hidden; */
     display: block;
 }
 body{
     background: black;
     color: white;
-    font-family: 'Trebuchet MS', sans-serif;
+    font-family: 'Courier New', sans-serif;
     
     display: flex;
     align-items: center;
@@ -18,3 +18,13 @@ body{
 .canvas_div{
     margin-top: 2%;
 }
+/* .stage_input[contenteditable]{
+    border: 1px solid #eee;
+    min-width: 5%;
+    width: fit-content;
+    min-height: 5%;
+    height: fit-content;
+    padding: 0.5%;
+    min-height: 1em;
+    overflow: auto;
+} */

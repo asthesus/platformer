@@ -6,7 +6,6 @@ const key_img = document.getElementById(`key_png`);
 const blue_bricks_img = document.getElementById(`blue_bricks_png`);
 const spikes_img = document.getElementById(`spikes_png`);
 const moving_block_img = document.getElementById(`moving_block_png`);
-// const stained_glass_moon_img = document.getElementById(`stained_glass_moon_png`);
 const avatar_crouch_img = document.getElementById(`avatar_crouch_png`);
 const avatar_jump_img = document.getElementById(`avatar_jump_png`);
 const avatar_stand_img = document.getElementById(`avatar_stand_png`);
@@ -58,28 +57,24 @@ stage.width = 0;
 stage.height = 0;
 stage.spawn = {x: 0, y:0};
 
-stage.movingBlocks = () => {
-    let north_list = [];
-    let east_list = [];
-    let south_list = [];
-    let west_list = [];
+stage.moveMovingBlocks = () => {
+    let blocks_list = [];
+    blocks_list[0] = [];
+    blocks_list[1] = [];
+    blocks_list[2] = [];
+    blocks_list[3] = [];
     for(let iy = 0; iy < stage.height; iy++) {
         for(let ix = 0; ix < stage.width; ix++) {
-            if(stage.matrix[iy][ix] === `n` || stage.matrix[iy][ix] === `e` || stage.matrix[iy][ix] === `s` || stage.matrix[iy][ix] === `w`) {
-                let block_position = {x: ix, y: iy};
-                if(stage.matrix[iy][ix] === `n`) {north_list.push(block_position)};
-                if(stage.matrix[iy][ix] === `e`) {east_list.push(block_position)};
-                if(stage.matrix[iy][ix] === `s`) {south_list.push(block_position)};
-                if(stage.matrix[iy][ix] === `w`) {west_list.push(block_position)};
-            }
+            if(stage.matrix[iy][ix] === `n`) {blocks_list[0].push({x: ix, y: iy})}
+            else if(stage.matrix[iy][ix] === `e`) {blocks_list[1].push({x: ix, y: iy})}
+            else if(stage.matrix[iy][ix] === `s`) {blocks_list[2].push({x: ix, y: iy})}
+            else if(stage.matrix[iy][ix] === `w`) {blocks_list[3].push({x: ix, y: iy})};
         }
     }
-    while(north_list.length + east_list.length + south_list.length + west_list.length > 0) {
-        if(north_list.length > 0) {stage.shiftTile(north_list.pop(), 1, 0)};
-        if(east_list.length > 0) {stage.shiftTile(east_list.shift(), 1, 1)};
-        if(south_list.length > 0) {stage.shiftTile(south_list.shift(), 1, 2)};
-        if(west_list.length > 0) {stage.shiftTile(west_list.pop(), 1, 3)};
-    }
+    while(blocks_list[0].length > 0) {stage.shiftTile(blocks_list[0].pop(), 1, 0)};
+    while(blocks_list[1].length > 0) {stage.shiftTile(blocks_list[1].shift(), 1, 1)};
+    while(blocks_list[2].length > 0) {stage.shiftTile(blocks_list[2].shift(), 1, 2)};
+    while(blocks_list[3].length > 0) {stage.shiftTile(blocks_list[3].pop(), 1, 3)};
 }
 stage.isTile = (tile) => {if(tile === `b` || tile === `n` || tile === `e` || tile === `s` || tile === `w` || tile === `1` || tile === `2` || tile === `3` || tile === `4`) {return true} else return false};
 stage.shiftTile = (tile_position, force, direction) => {
@@ -127,7 +122,7 @@ stage.shiftTile = (tile_position, force, direction) => {
                 && (avatar.height === 1 || !avatar.blocked(direction_x, direction_y + 1))
                 && !(avatar.grasping && avatar_on_top && direction_y === -1)) {
                     avatar.position.x += direction_x;
-                    avatar.position.y += direction_y
+                    avatar.position.y += direction_y;
                 }
             }
             avatar.correctStance();
@@ -135,7 +130,7 @@ stage.shiftTile = (tile_position, force, direction) => {
             if(tile_list[0] === `n`) stage.matrix[tile_y][tile_x] = `s`
             else if(tile_list[0] === `e`) stage.matrix[tile_y][tile_x] = `w`
             else if(tile_list[0] === `s`) stage.matrix[tile_y][tile_x] = `n`
-            else if(tile_list[0] === `w`) stage.matrix[tile_y][tile_x] = `e`
+            else if(tile_list[0] === `w`) stage.matrix[tile_y][tile_x] = `e`;
         }
     } 
 }
@@ -531,7 +526,7 @@ time = () => {
         if(!time_frozen) {
             if(avatar.delay_action === 0) {if(saved_input.length > 0) (saved_input.shift())()} else avatar.delay_action--;
             if(gravity_second === gravity_tick) {gravity_second = 0; avatar.gravity()};
-            if(moving_blocks_second === moving_blocks_tick) {moving_blocks_second = 0; stage.movingBlocks()};
+            if(moving_blocks_second === moving_blocks_tick) {moving_blocks_second = 0; stage.moveMovingBlocks()};
             avatar.age++;
             canvas.clear();
             stage.draw();
