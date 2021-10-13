@@ -478,10 +478,10 @@ avatar.move = (direction) => {
             //     avatar.pullup(1);
             //     grasped = true;
             // }
-            if(avatar.blocked(0, -1) && !avatar.blocked(direction, -1) && !avatar.blocked(direction, -2)) {
-                avatar.queueFunction(false, avatar.move, this, [direction * -1]);
-                avatar.queueFunction(false, avatar.delayAction, this, [1]);
-            }
+            // if(avatar.blocked(0, -1) && !avatar.blocked(direction, -1) && !avatar.blocked(direction, -2)) {
+            //     avatar.queueFunction(false, avatar.move, this, [direction * -1]);
+            //     avatar.queueFunction(false, avatar.delayAction, this, [1]);
+            // }
             avatar.position.x += direction;
         }
         avatar.correctStance();
