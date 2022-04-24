@@ -30,7 +30,7 @@ canvas.clear = () => {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 canvas.deathScreen = () => {
-    canvas.clear();
+    // canvas.clear();
     ctx.textAlign = `center`;
     ctx.fillStyle = `#800`;
     ctx.font = `${canvas.dimension * 1.5}px Courier New`;
@@ -59,25 +59,16 @@ stage.spawn = {x: 0, y:0};
 
 stage.moveMovingBlocks = (direction) => {
     let blocks_list = [];
-    let tile;
-    if(direction === 0) tile = `n`
-    else if(direction === 1) tile = `e`
-    else if(direction === 2) tile = `s`
-    else if(direction === 3) tile = `w`;
-    for(let iy = 0; iy < stage.height; iy++) {
-        for(let ix = 0; ix < stage.width; ix++) {
-            if(stage.matrix[iy][ix] === tile) blocks_list.push({x: ix, y: iy});
-        }
-    }
+    for(let iy = 0; iy < stage.height; iy++) {for(let ix = 0; ix < stage.width; ix++) {if(stage.matrix[iy][ix] == direction) blocks_list.push({x: ix, y: iy})}};
     if(direction === 0 || direction === 3) {while(blocks_list.length > 0) {stage.shiftTile(blocks_list.pop(), 1, direction)}}
     else {while(blocks_list.length > 0) {stage.shiftTile(blocks_list.shift(), 1, direction)}};
 }
 stage.isTile = (tile) => {if(
-    tile === `b` || tile === `n` ||
+    tile === `b` || tile === `0` ||
+    tile === `1` || tile === `2` ||
+    tile === `3` || tile === `n` ||
     tile === `e` || tile === `s` ||
-    tile === `w` || tile === `1` ||
-    tile === `2` || tile === `3` ||
-    tile === `4`)
+    tile === `w`)
     {return true} else return false;
 }
 stage.shiftTile = (tile_position, force, direction) => {
@@ -124,10 +115,10 @@ stage.shiftTile = (tile_position, force, direction) => {
             }
             // avatar.correctStance();
         } else {
-            if(tile_list[0] === `n`) stage.matrix[tile_y][tile_x] = `s`
-            else if(tile_list[0] === `e`) stage.matrix[tile_y][tile_x] = `w`
-            else if(tile_list[0] === `s`) stage.matrix[tile_y][tile_x] = `n`
-            else if(tile_list[0] === `w`) stage.matrix[tile_y][tile_x] = `e`;
+            if(tile_list[0] === `0`) stage.matrix[tile_y][tile_x] = `2`
+            else if(tile_list[0] === `1`) stage.matrix[tile_y][tile_x] = `3`
+            else if(tile_list[0] === `2`) stage.matrix[tile_y][tile_x] = `0`
+            else if(tile_list[0] === `3`) stage.matrix[tile_y][tile_x] = `1`;
         }
     } 
 }
@@ -159,40 +150,40 @@ stage.draw = () => {
             let dimension_x = canvas.dimension;
             let dimension_y = canvas.dimension;
             if(stage.matrix[iy][ix] === `b`) {tile = blue_bricks_img}
-            // else if(stage.matrix[iy][ix] === `n`) {tile = moving_block_img}
-            // else if(stage.matrix[iy][ix] === `e`) {
+            // else if(stage.matrix[iy][ix] === `0`) {tile = moving_block_img}
+            // else if(stage.matrix[iy][ix] === `1`) {
             //     tile = moving_block_img;
             //     ctx.rotate(Math.PI * 0.5);
             //     [print_x, print_y] = [print_y, print_x * -1];
             // }
-            // else if(stage.matrix[iy][ix] === `s`) {
+            // else if(stage.matrix[iy][ix] === `2`) {
             //     tile = moving_block_img;
             //     ctx.rotate(Math.PI * 1);
             //     [print_x, print_y] = [print_x * -1, print_y * -1];
             // }
-            // else if(stage.matrix[iy][ix] === `w`) {
+            // else if(stage.matrix[iy][ix] === `3`) {
             //     tile = moving_block_img;
             //     ctx.rotate(Math.PI * 1.5);
             //     [print_x, print_y] = [print_y * -1, print_x];
             // }
-            else if(stage.matrix[iy][ix] === `n`) {tile = moving_block_img}
-            else if(stage.matrix[iy][ix] === `e`) {tile = moving_block_img}
-            else if(stage.matrix[iy][ix] === `s`) {tile = moving_block_img}
-            else if(stage.matrix[iy][ix] === `w`) {
+            else if(stage.matrix[iy][ix] === `0`) {tile = moving_block_img}
+            else if(stage.matrix[iy][ix] === `1`) {tile = moving_block_img}
+            else if(stage.matrix[iy][ix] === `2`) {tile = moving_block_img}
+            else if(stage.matrix[iy][ix] === `3`) {
                 tile = moving_block_img;
                 ctx.scale(-1, 1);
                 print_x *= -1;
             }
-            else if(stage.matrix[iy][ix] === `1`) {tile = spikes_img}
-            else if(stage.matrix[iy][ix] === `2`) {
+            else if(stage.matrix[iy][ix] === `n`) {tile = spikes_img}
+            else if(stage.matrix[iy][ix] === `e`) {
                 tile = spikes_img;
                 ctx.rotate(Math.PI * 0.5);
                 [print_x, print_y] = [print_y, print_x * -1];
-            } else if(stage.matrix[iy][ix] === `3`) {
+            } else if(stage.matrix[iy][ix] === `s`) {
                 tile = spikes_img;
                 ctx.rotate(Math.PI * 1);
                 [print_x, print_y] = [print_x * -1, print_y * -1];
-            } else if(stage.matrix[iy][ix] === `4`) {
+            } else if(stage.matrix[iy][ix] === `w`) {
                 tile = spikes_img;
                 ctx.rotate(Math.PI * 1.5);
                 [print_x, print_y] = [print_y * -1, print_x];
@@ -324,7 +315,7 @@ avatar.blocked = (direction, height) => {
     || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === undefined) {return false}
     else {
         let tile = stage.matrix[avatar.position.y + height][avatar.position.x + direction];
-        if(tile === `b` || tile === `n` || tile === `e` || tile === `s` || tile === `w`) {return true} else return false;
+        if(tile === `b` || tile === `0` || tile === `1` || tile === `2` || tile === `3`) {return true} else return false;
     }
 }
 avatar.zapped = (direction, height) => {
@@ -332,22 +323,20 @@ avatar.zapped = (direction, height) => {
     || stage.matrix[avatar.position.y + height][avatar.position.x + direction] === undefined) {return false}
     else {
         let tile = stage.matrix[avatar.position.y + height][avatar.position.x + direction];
-        if(tile === `1` || tile === `2` || tile === `3` || tile === `4`) {return true} else return false;
+        if(tile === `n` || tile === `e` || tile === `s` || tile === `w`) {return true} else return false;
     }
 }
 avatar.draw = () => {
-    if(avatar.alive) {
-        let print_x = canvas.center.x - canvas.dimension_half;
-        let print_y = canvas.center.y - (canvas.dimension * (avatar.height - 1)) - canvas.dimension_half;
-        let dimension_x = canvas.dimension * avatar.width;
-        let dimension_y = canvas.dimension * avatar.height;
-        if(avatar.facing === 1) {
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-        }
-        ctx.drawImage(avatar.sprite, print_x, print_y, dimension_x, dimension_y);
-        if(avatar.facing === 1) ctx.resetTransform();
+    let print_x = canvas.center.x - canvas.dimension_half;
+    let print_y = canvas.center.y - (canvas.dimension * (avatar.height - 1)) - canvas.dimension_half;
+    let dimension_x = canvas.dimension * avatar.width;
+    let dimension_y = canvas.dimension * avatar.height;
+    if(avatar.facing === 1) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
     }
+    ctx.drawImage(avatar.sprite, print_x, print_y, dimension_x, dimension_y);
+    if(avatar.facing === 1) ctx.resetTransform();
 }
 avatar.gravity = () => {
     if(avatar.alive && !avatar.grasping) {
@@ -598,19 +587,19 @@ let test1 = [
     `bbbbbbb.....................`,
     `bbbbbbb...........b.b.b.....`,
     `bbbbbbb..........bb.........`,
-    `bbbbbbb2........bbb1111111..`,
+    `bbbbbbbe........bbbnnnnnnn..`,
     `bbbbbbb........bbbbbbbbbbb..`,
-    `b3...3........bbb333........`,
-    `b.........1..bbbb...........`,
+    `bs...s........bbbsss........`,
+    `b.........n..bbbb...........`,
     `b.bbbbbbbbbbbbbbb.b.........`,
-    `b........4bb......b.....b...`,
+    `b........sbb......b.....b...`,
     `b.........bb......b....bb...`,
-    `b....a....bb......bbbbbbb111`,
+    `b....a....bb......bbbbbbbnnn`,
     `bbbbbbbbbbbbbbbbbbbbbbbbbbbb`
 ]
 let test2 = [
     `bbbbbbbbbbbbbbbbb`,
-    `bsssb...........b`,
+    `b222b...........b`,
     `b...b...........b`,
     `b...b...........b`,
     `b...b...........b`,
@@ -622,35 +611,36 @@ let test2 = [
     `b.a.............b`,
     `bbbbbbbbbbbbbbbbb`
 ]
+let test3 = [
+    `bbbbbbbbbbbbbbbbb`,
+    `bb.............bb`,
+    `bb.............bb`,
+    `bb.............bb`,
+    `b.......1.......b`,
+    `bb.............bb`,
+    `b.....1.........b`,
+    `bb.............bb`,
+    `b...1...........b`,
+    `bba............bb`,
+    `b.1.............b`,
+    `bbnnnnnnnnnnnnnbb`,
+    `bbbbbbbbbbbbbbbbb`
+]
 let stage1 = [
     `bbbbbbbbbbbbbbbbb`,
     `bbbbbb.....bbbbbb`,
     `bbbbbb..k..bbbbbb`,
     `b....b.bbb.b....b`,
-    `b....b.33b.3....b`,
-    `b....3...3......b`,
-    `b.b.w.........b.b`,
-    `b......1...1....b`,
-    `b....11b111b....b`,
+    `b....b.ssb.s....b`,
+    `b....s...s......b`,
+    `b.b.3.........b.b`,
+    `b......n...n....b`,
+    `b....nnbnnnb....b`,
     `bb...bbbbbbb...bb`,
     `bb.a.bbbbbbb.x.bb`,
     `bbbbbbbbbbbbbbbbb`
 ]
-let stage2 = [
-    `bbbbbbbbbbbbbbbbb`,
-    `bb.............bb`,
-    `bb.............bb`,
-    `bb.............bb`,
-    `b.......e.......b`,
-    `bb.............bb`,
-    `b.....e.........b`,
-    `bb.............bb`,
-    `b...e...........b`,
-    `bba............bb`,
-    `b.e.............b`,
-    `bb1111111111111bb`,
-    `bbbbbbbbbbbbbbbbb`
-]
+
 stage.inputStringArray(stage1);
 
 avatar.resurrect(stage.spawn);
@@ -661,8 +651,11 @@ time();
 
 // to do:
 //
+// keybind to show/hide stage input + keybind to apply plain text as a new stage and run it
+// when button is pressed, convert the current stage to plain text and put it in the stage input field
+//
+// delay after dying where the stage and avatar are frozen and player actions are blocked, so the player can see how they died.
+//
+// flying eyeball enemies - move in the direction they're looking, unless it is blocked, in which case they turn 90 degrees counter clockwise. if the player is in the direction the eyeball is looking and the line of sight is unobstructed, the eyeball fires a laser at the player. optic nerve body is dragged behind the eyeball.
+//
 // background layer is procedurally generated according to what is present in the foreground
-//
-// make different directions of moving blocks start moving at different times, with the same overall speed, to make them easier to navigate when there are a bunch together all going in different directions
-//
-// treat "undefined" as normal free spaces. this allows levels to be made without adding extra space at the top for jumping, and makes the skybox unlimited.
