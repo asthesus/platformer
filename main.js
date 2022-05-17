@@ -30,7 +30,6 @@ canvas.clear = () => {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 canvas.deathScreen = () => {
-    // canvas.clear();
     ctx.textAlign = `center`;
     ctx.fillStyle = `#800`;
     ctx.font = `${canvas.dimension * 1.5}px Courier New`;
@@ -113,7 +112,6 @@ stage.shiftTile = (tile_position, force, direction) => {
                     avatar.position.y += direction_y;
                 }
             }
-            // avatar.correctStance();
         } else {
             if(tile_list[0] === `0`) stage.matrix[tile_y][tile_x] = `2`
             else if(tile_list[0] === `1`) stage.matrix[tile_y][tile_x] = `3`
@@ -150,22 +148,6 @@ stage.draw = () => {
             let dimension_x = canvas.dimension;
             let dimension_y = canvas.dimension;
             if(stage.matrix[iy][ix] === `b`) {tile = blue_bricks_img}
-            // else if(stage.matrix[iy][ix] === `0`) {tile = moving_block_img}
-            // else if(stage.matrix[iy][ix] === `1`) {
-            //     tile = moving_block_img;
-            //     ctx.rotate(Math.PI * 0.5);
-            //     [print_x, print_y] = [print_y, print_x * -1];
-            // }
-            // else if(stage.matrix[iy][ix] === `2`) {
-            //     tile = moving_block_img;
-            //     ctx.rotate(Math.PI * 1);
-            //     [print_x, print_y] = [print_x * -1, print_y * -1];
-            // }
-            // else if(stage.matrix[iy][ix] === `3`) {
-            //     tile = moving_block_img;
-            //     ctx.rotate(Math.PI * 1.5);
-            //     [print_x, print_y] = [print_y * -1, print_x];
-            // }
             else if(stage.matrix[iy][ix] === `0`) {tile = moving_block_img}
             else if(stage.matrix[iy][ix] === `1`) {tile = moving_block_img}
             else if(stage.matrix[iy][ix] === `2`) {tile = moving_block_img}
@@ -271,11 +253,6 @@ avatar.correctStance = () => {
         avatar.height = 1;
         avatar.sprite = avatar_crouch_img;
     }
-    // else {
-    //     avatar.width = 1;
-    //     avatar.height = 2;
-    //     avatar.sprite = avatar_stand_img;
-    // }
     if(avatar.blocked(0, -1) || (avatar.grasping && avatar.height === 2)) {
         avatar.airtime = 0;
         avatar.jumping = 0;
@@ -461,17 +438,6 @@ avatar.move = (direction) => {
         if(!grasped) avatar.grasp(0);
         if(can_move) {
             if(avatar.blocked(0, 1)) {avatar.crouching = true; avatar.time_crouched = 0};
-            // if(avatar.crouching && avatar.blocked(0, -1) && !avatar.blocked(direction, -1) && !avatar.blocked(direction, -2)) {
-            //     avatar.facing = direction * -1;
-            //     avatar.position.y--;
-            //     avatar.grasp(1);
-            //     avatar.pullup(1);
-            //     grasped = true;
-            // }
-            // if(avatar.blocked(0, -1) && !avatar.blocked(direction, -1) && !avatar.blocked(direction, -2)) {
-            //     avatar.queueFunction(false, avatar.move, this, [direction * -1]);
-            //     avatar.queueFunction(false, avatar.delayAction, this, [1]);
-            // }
             avatar.position.x += direction;
         }
         avatar.correctStance();
@@ -562,7 +528,6 @@ function keyDown(e) {
             }
         }
         else if(e.key === `g`) {avatar.queueFunction(true, avatar.delayAction, this, [1])}
-        // else if(e.key === ` `) time_frozen = !time_frozen;
     } else {
         avatar.resurrect(stage.spawn);
     }
