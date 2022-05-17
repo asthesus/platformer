@@ -227,6 +227,7 @@ avatar.keys = 0;
 avatar.sprite = avatar_stand_img;
 avatar.age = 0;
 avatar.successful = false;
+saved_input_limit = 5;
 
 avatar.canExit = () => {if(avatar.keys > 0 && avatar.height === 2 && stage.matrix[avatar.position.y][avatar.position.x] === `x`) {return true} else return false};
 avatar.pullup = (mode) => {if(mode === 0) {avatar.pullingup = false} else if(mode === 1) {avatar.pullingup = true}};
@@ -308,7 +309,7 @@ avatar.correctStance = () => {
 avatar.queueFunction = (push, function_to_queue, queue_context, queue_paramaters) => {
     let wrapFunction = (function_to_wrap, wrap_context, wrap_paramaters) => {return function() {function_to_wrap.apply(wrap_context, wrap_paramaters)}};
     let wrapped_function = wrapFunction(function_to_queue, queue_context, queue_paramaters);
-    if(push) {saved_input.push(wrapped_function)} else {saved_input.unshift(wrapped_function)};
+    if(push && saved_input.length < saved_input_limit) {saved_input.push(wrapped_function)} else {saved_input.unshift(wrapped_function)};
 }
 avatar.blocked = (direction, height) => {
     if(stage.matrix[avatar.position.y + height] === undefined
@@ -543,7 +544,6 @@ time = () => {
 
 let arrow_left_held = false;
 let arrow_right_held = false;
-let shift_held = false;
 function keyDown(e) {
     if(avatar.alive) {
         if(e.key === `ArrowLeft` || e.key === `a` || e.key === `A`) {arrow_left_held = true; avatar.queueFunction(true, avatar.move, this, [1])}
@@ -562,70 +562,19 @@ function keyDown(e) {
             }
         }
         else if(e.key === `g`) {avatar.queueFunction(true, avatar.delayAction, this, [1])}
-        else if(e.key === ` `) time_frozen = !time_frozen;
+        // else if(e.key === ` `) time_frozen = !time_frozen;
     } else {
         avatar.resurrect(stage.spawn);
     }
-    if(e.key === `Shift`) {shift_held = true}
     // if(e.key === `q`) {console.log(html_stage_input.innerHTML)};
 }
 function keyUp(e) {
     if(e.key === `ArrowLeft`) {arrow_left_held = false}
     else if(e.key === `ArrowRight`) {arrow_right_held = false}
-    else if(e.key === `Shift`) shift_held = false;
 }
 document.addEventListener(`keydown`, keyDown);
 document.addEventListener(`keyup`, keyUp);
 
-let test1 = [
-    `bbbbbbb.....................`,
-    `bbbbbbb.....................`,
-    `bbbbbbb.....................`,
-    `bbbbbbb.....................`,
-    `bbbbbbb................b....`,
-    `bbbbbbb.....................`,
-    `bbbbbbb.....................`,
-    `bbbbbbb...........b.b.b.....`,
-    `bbbbbbb..........bb.........`,
-    `bbbbbbbe........bbbnnnnnnn..`,
-    `bbbbbbb........bbbbbbbbbbb..`,
-    `bs...s........bbbsss........`,
-    `b.........n..bbbb...........`,
-    `b.bbbbbbbbbbbbbbb.b.........`,
-    `b........sbb......b.....b...`,
-    `b.........bb......b....bb...`,
-    `b....a....bb......bbbbbbbnnn`,
-    `bbbbbbbbbbbbbbbbbbbbbbbbbbbb`
-]
-let test2 = [
-    `bbbbbbbbbbbbbbbbb`,
-    `b222b...........b`,
-    `b...b...........b`,
-    `b...b...........b`,
-    `b...b...........b`,
-    `b...b...........b`,
-    `b...b...........b`,
-    `b...b...........b`,
-    `b...b...........b`,
-    `b...b...........b`,
-    `b.a.............b`,
-    `bbbbbbbbbbbbbbbbb`
-]
-let test3 = [
-    `bbbbbbbbbbbbbbbbb`,
-    `bb.............bb`,
-    `bb.............bb`,
-    `bb.............bb`,
-    `b.......1.......b`,
-    `bb.............bb`,
-    `b.....1.........b`,
-    `bb.............bb`,
-    `b...1...........b`,
-    `bba............bb`,
-    `b.1.............b`,
-    `bbnnnnnnnnnnnnnbb`,
-    `bbbbbbbbbbbbbbbbb`
-]
 let stage1 = [
     `bbbbbbbbbbbbbbbbb`,
     `bbbbbb.....bbbbbb`,
