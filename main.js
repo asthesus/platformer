@@ -1,6 +1,7 @@
 const html_canvas = document.getElementById(`c`);
 const ctx = html_canvas.getContext(`2d`);
 // const html_stage_input = document.getElementById(`stage_input`);
+const scarab_img = document.getElementById(`scarab_png`);
 const locked_exit_img = document.getElementById(`locked_exit_png`);
 const key_img = document.getElementById(`key_png`);
 const blue_bricks_img = document.getElementById(`blue_bricks_png`);
@@ -46,7 +47,8 @@ canvas.victoryScreen = () => {
     ctx.fillText(`Success`, canvas.center.x, canvas.center.y);
     ctx.fillStyle = `#666`;
     ctx.font = `${canvas.dimension}px Courier New`;
-    ctx.fillText(`Ticks: ${avatar.age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
+    ctx.fillText(`Scarabs: ${avatar.scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
+    ctx.fillText(`Ticks: ${avatar.age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 3));
 }
 
 stage = {};
@@ -175,6 +177,8 @@ stage.draw = () => {
                 dimension_y *= 2;
             } else if(stage.matrix[iy][ix] === `k`) {
                 tile = key_img;
+            } else if(stage.matrix[iy][ix] === `r`) {
+                tile = scarab_img;
             }
             print_x -= canvas.dimension_half;
             print_y -= canvas.dimension_half;
@@ -206,10 +210,11 @@ avatar.time_standing = 0;
 avatar.height = 2;
 avatar.width = 1;
 avatar.keys = 0;
+avatar.scarabs = 0;
 avatar.sprite = avatar_stand_img;
 avatar.age = 0;
 avatar.successful = false;
-saved_input_limit = 5;
+saved_input_limit = 4;
 
 avatar.canExit = () => {if(avatar.keys > 0 && avatar.height === 2 && stage.matrix[avatar.position.y][avatar.position.x] === `x`) {return true} else return false};
 avatar.pullup = (mode) => {if(mode === 0) {avatar.pullingup = false} else if(mode === 1) {avatar.pullingup = true}};
@@ -277,6 +282,10 @@ avatar.correctStance = () => {
     if(stage.matrix[avatar.position.y][avatar.position.x] === `k`) {
         stage.matrix[avatar.position.y][avatar.position.x] = `.`;
         avatar.keys++;
+    }
+    if(stage.matrix[avatar.position.y][avatar.position.x] === `r`) {
+        stage.matrix[avatar.position.y][avatar.position.x] = `.`;
+        avatar.scarabs++;
     }
     if(avatar.canExit()) {
         avatar.successful = true;
@@ -466,6 +475,7 @@ avatar.resurrect = (new_position) => {
         avatar.width = 1;
         avatar.height = 2;
         avatar.keys = 0;
+        avatar.scarabs = 0;
         avatar.age = 0;
         avatar.successful = false;
         avatar.alive = true;
@@ -546,7 +556,7 @@ let stage1 = [
     `bbbbbb..k..bbbbbb`,
     `b....b.bbb.b....b`,
     `b....b.ssb.s....b`,
-    `b....s...s......b`,
+    `b....s.r.s......b`,
     `b.b.3.........b.b`,
     `b......n...n....b`,
     `b....nnbnnnb....b`,
