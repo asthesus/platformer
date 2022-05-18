@@ -3,7 +3,7 @@ html, body{
     height: 100%;
     margin: 0px;
     border: 0;
-    /* overflow: hidden; */
+    overflow: hidden;
     display: block;
 }
 body{
@@ -14,9 +14,11 @@ body{
     display: flex;
     align-items: center;
     flex-direction: column;
+    overflow: hidden;
 }
 .canvas_div{
     margin-top: 2%;
+    overflow: hidden;
 }
 /* .stage_input[contenteditable]{
     border: 1px solid #eee;
