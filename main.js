@@ -47,8 +47,9 @@ canvas.victoryScreen = () => {
     ctx.fillText(`Success`, canvas.center.x, canvas.center.y);
     ctx.fillStyle = `#666`;
     ctx.font = `${canvas.dimension}px Courier New`;
-    ctx.fillText(`Scarabs: ${avatar.scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
-    ctx.fillText(`Ticks: ${avatar.age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 3));
+    ctx.fillText(`Ticks: ${avatar.age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
+    ctx.fillText(`Scarabs: ${avatar.scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 3));
+    ctx.fillText(`Scarabs total: ${avatar.story_scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 4));
 }
 
 stage = {};
@@ -211,9 +212,11 @@ avatar.height = 2;
 avatar.width = 1;
 avatar.keys = 0;
 avatar.scarabs = 0;
+avatar.story_scarabs = 0;
 avatar.sprite = avatar_stand_img;
 avatar.age = 0;
 avatar.successful = false;
+avatar.current_stage = 0;
 saved_input_limit = 4;
 
 avatar.canExit = () => {if(avatar.keys > 0 && avatar.height === 2 && stage.matrix[avatar.position.y][avatar.position.x] === `x`) {return true} else return false};
@@ -288,6 +291,8 @@ avatar.correctStance = () => {
         avatar.scarabs++;
     }
     if(avatar.canExit()) {
+        avatar.current_stage++;
+        avatar.story_scarabs += avatar.scarabs;
         avatar.successful = true;
         avatar.dies();
     }
@@ -383,6 +388,7 @@ avatar.jump = (power) => {
 }
 avatar.move = (direction) => {
     if(avatar.alive) {
+        gravity_second = gravity_tick;
         let can_move = false;
         let grasped = false;
         if(avatar.crouching
@@ -539,6 +545,11 @@ function keyDown(e) {
         }
         else if(e.key === `g`) {avatar.queueFunction(true, avatar.delayAction, this, [1])}
     } else {
+        if(avatar.current_stage >= story.length) {
+            avatar.current_stage = 0;
+            avatar.story_scarabs = 0;
+        }
+        stage.inputStringArray(story[avatar.current_stage]);
         avatar.resurrect(stage.spawn);
     }
     // if(e.key === `q`) {console.log(html_stage_input.innerHTML)};
@@ -550,22 +561,37 @@ function keyUp(e) {
 document.addEventListener(`keydown`, keyDown);
 document.addEventListener(`keyup`, keyUp);
 
-let stage1 = [
-    `bbbbbbbbbbbbbbbbb`,
-    `bbbbbb.....bbbbbb`,
-    `bbbbbb..k.rbbbbbb`,
-    `b....b.bbb.b....b`,
-    `b....b.ssb.s....b`,
-    `b....s.r.s......b`,
-    `b.b.3.........b.b`,
-    `b......n...n....b`,
-    `b....nnbnnnb....b`,
-    `bb...bbbbbbb...bb`,
-    `bb.a.bbbbbbb.x.bb`,
-    `bbbbbbbbbbbbbbbbb`
+let story = [
+    // [
+    //     `bbbbbbbbbbbbbbbbbbbbb`,
+    //     `b.....bs.rs.rs.rs.rsb`,
+    //     `b.....b......3......b`,
+    //     `bk....b.............b`,
+    //     `bb..................b`,
+    //     `bb.................xb`,
+    //     `bb..1.rb...........bb`,
+    //     `bb.....b............b`,
+    //     `bb.....b............b`,
+    //     `bb.a...bnnnnnnnnnnnnb`,
+    //     `bbbbbbbbbbbbbbbbbbbbb`
+    // ],
+    [
+        `bbbbbbbbbbbbbbbbb`,
+        `bbbbbb.....bbbbbb`,
+        `bbbbbb..k.rbbbbbb`,
+        `b....b.bbb.b....b`,
+        `b....b.ssb.s....b`,
+        `b....s.r.s......b`,
+        `b.b.3.........b.b`,
+        `b......n...n....b`,
+        `b....nnbnnnb....b`,
+        `bb...bbbbbbb...bb`,
+        `bb.a.bbbbbbb.x.bb`,
+        `bbbbbbbbbbbbbbbbb`
+    ]
 ]
 
-stage.inputStringArray(stage1);
+stage.inputStringArray(story[avatar.current_stage]);
 
 avatar.resurrect(stage.spawn);
 
