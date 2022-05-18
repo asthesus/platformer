@@ -553,7 +553,7 @@ document.addEventListener(`keyup`, keyUp);
 let stage1 = [
     `bbbbbbbbbbbbbbbbb`,
     `bbbbbb.....bbbbbb`,
-    `bbbbbb..k..bbbbbb`,
+    `bbbbbb..k.rbbbbbb`,
     `b....b.bbb.b....b`,
     `b....b.ssb.s....b`,
     `b....s.r.s......b`,
