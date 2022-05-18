@@ -48,8 +48,9 @@ canvas.victoryScreen = () => {
     ctx.fillStyle = `#666`;
     ctx.font = `${canvas.dimension}px Courier New`;
     ctx.fillText(`Ticks: ${avatar.age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
-    ctx.fillText(`Scarabs: ${avatar.scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 3));
-    ctx.fillText(`Scarabs total: ${avatar.story_scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 4));
+    ctx.fillText(`Total: ${avatar.story_age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 3));
+    ctx.fillText(`Scarabs: ${avatar.scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 4));
+    ctx.fillText(`Total: ${avatar.story_scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 5));
 }
 
 stage = {};
@@ -215,6 +216,7 @@ avatar.scarabs = 0;
 avatar.story_scarabs = 0;
 avatar.sprite = avatar_stand_img;
 avatar.age = 0;
+avatar.story_age = 0;
 avatar.successful = false;
 avatar.current_stage = 0;
 saved_input_limit = 4;
@@ -292,6 +294,7 @@ avatar.correctStance = () => {
     }
     if(avatar.canExit()) {
         avatar.current_stage++;
+        avatar.story_age += avatar.age;
         avatar.story_scarabs += avatar.scarabs;
         avatar.successful = true;
         avatar.dies();
@@ -548,6 +551,7 @@ function keyDown(e) {
         if(avatar.current_stage >= story.length) {
             avatar.current_stage = 0;
             avatar.story_scarabs = 0;
+            avatar.story_age = 0;
         }
         stage.inputStringArray(story[avatar.current_stage]);
         avatar.resurrect(stage.spawn);
