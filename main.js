@@ -23,14 +23,10 @@ canvas.center.y = canvas.height / 2;
 canvas.draw = () => {
     html_canvas.width = canvas.width;
     html_canvas.height = canvas.height;
-    ctx.fillStyle = `#001`;
+    ctx.fillStyle = `#000`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
-canvas.clear = () => {
-    ctx.fillStyle = `#001`;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
-canvas.deathScreen = () => {
+canvas.death_screen = () => {
     ctx.textAlign = `center`;
     ctx.fillStyle = `#800`;
     ctx.font = `${canvas.dimension * 1.5}px Courier New`;
@@ -39,15 +35,15 @@ canvas.deathScreen = () => {
     ctx.font = `${canvas.dimension}px Courier New`;
     ctx.fillText(`Press any key to try again`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
 }
-canvas.victoryScreen = () => {
-    canvas.clear();
+canvas.victory_screen = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.textAlign = `center`;
     ctx.fillStyle = `#080`;
     ctx.font = `${canvas.dimension * 1.5}px Courier New`;
     ctx.fillText(`Success`, canvas.center.x, canvas.center.y);
     ctx.fillStyle = `#666`;
     ctx.font = `${canvas.dimension}px Courier New`;
-    ctx.fillText(`Ticks: ${avatar.age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
+    ctx.fillText(`Time: ${avatar.age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
     ctx.fillText(`Total: ${avatar.story_age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 3));
     ctx.fillText(`Scarabs: ${avatar.scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 4));
     ctx.fillText(`Total: ${avatar.story_scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 5));
@@ -60,13 +56,13 @@ stage.width = 0;
 stage.height = 0;
 stage.spawn = {x: 0, y:0};
 
-stage.moveMovingBlocks = (direction) => {
+stage.move_moving_blocks = (direction) => {
     let blocks_list = [];
     for(let iy = 0; iy < stage.height; iy++) {for(let ix = 0; ix < stage.width; ix++) {if(stage.matrix[iy][ix] == direction) blocks_list.push({x: ix, y: iy})}};
-    if(direction === 0 || direction === 3) {while(blocks_list.length > 0) {stage.shiftTile(blocks_list.pop(), 1, direction)}}
-    else {while(blocks_list.length > 0) {stage.shiftTile(blocks_list.shift(), 1, direction)}};
+    if(direction === 0 || direction === 3) {while(blocks_list.length > 0) {stage.shift_tile(blocks_list.pop(), 1, direction)}}
+    else {while(blocks_list.length > 0) {stage.shift_tile(blocks_list.shift(), 1, direction)}};
 }
-stage.isTile = (tile) => {if(
+stage.is_tile = (tile) => {if(
     tile === `b` || tile === `0` ||
     tile === `1` || tile === `2` ||
     tile === `3` || tile === `n` ||
@@ -74,10 +70,10 @@ stage.isTile = (tile) => {if(
     tile === `w`)
     {return true} else return false;
 }
-stage.shiftTile = (tile_position, force, direction) => {
+stage.shift_tile = (tile_position, force, direction) => {
     let tile_x = tile_position.x;
     let tile_y = tile_position.y;
-    if(stage.matrix[tile_y] !== undefined && stage.isTile(stage.matrix[tile_y][tile_x])) {
+    if(stage.matrix[tile_y] !== undefined && stage.is_tile(stage.matrix[tile_y][tile_x])) {
         let tile_list = [];
         let direction_x = 0;
         let direction_y = 0;
@@ -88,10 +84,10 @@ stage.shiftTile = (tile_position, force, direction) => {
         for(let i = 0; i <= force; i++) {
             if(stage.matrix[tile_y + (direction_y * i)] === undefined
             || stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)] === undefined) {[i, force] = [force + 1, i - 1]}
-            else if(!stage.isTile(stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)])) {[i, force] = [force + 1, i]}
+            else if(!stage.is_tile(stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)])) {[i, force] = [force + 1, i]}
             else tile_list[i] = stage.matrix[tile_y + (direction_y * i)][tile_x + (direction_x * i)];
         }
-        if(!stage.isTile(tile_list[force])) {
+        if(!stage.is_tile(tile_list[force])) {
             let avatar_on_top = false;
             let avatar_in_way = false;
             let avatar_holding_on = false;
@@ -124,7 +120,9 @@ stage.shiftTile = (tile_position, force, direction) => {
         }
     } 
 }
-stage.inputStringArray = (string_array) => {
+stage.input_string_array = (string_array) => {
+    moving_blocks_second = 0;
+    moving_blocks_direction = 0;
     stage.input = string_array;
     stage.matrix = [];
     stage.width = string_array[0].length;
@@ -144,6 +142,16 @@ stage.inputStringArray = (string_array) => {
     }
 }
 stage.draw = () => {
+    for(let iy = 0; iy < stage.height; iy++) {
+        for(let ix = 0; ix < stage.width; ix++) {
+            let print_x = (avatar.position.x - ix) * canvas.dimension + canvas.center.x;
+            let print_y = (avatar.position.y - iy) * canvas.dimension + canvas.center.y;
+            print_x -= canvas.dimension_half;
+            print_y -= canvas.dimension_half;
+            ctx.fillStyle = `#001`;
+            ctx.fillRect(print_x, print_y,canvas.dimension, canvas.dimension);
+        }
+    }
     for(let iy = 0; iy < stage.height; iy++) {
         for(let ix = 0; ix < stage.width; ix++) {
             let tile = 0;
@@ -221,7 +229,7 @@ avatar.successful = false;
 avatar.current_stage = 0;
 saved_input_limit = 4;
 
-avatar.canExit = () => {if(avatar.keys > 0 && avatar.height === 2 && stage.matrix[avatar.position.y][avatar.position.x] === `x`) {return true} else return false};
+avatar.can_exit = () => {if(!avatar.successful && avatar.keys > 0 && avatar.height === 2 && stage.matrix[avatar.position.y][avatar.position.x] === `x`) {return true} else return false};
 avatar.pullup = (mode) => {if(mode === 0) {avatar.pullingup = false} else if(mode === 1) {avatar.pullingup = true}};
 avatar.crouch = (mode) => {if(mode === 1) {avatar.crouching = true} else if(mode === 2) {avatar.crouching = false}};
 avatar.stand = () => {
@@ -236,8 +244,7 @@ avatar.ascend = () => {
         avatar.time_crouched = 0;
     }
 }
-avatar.delayAction = (duration) => {avatar.delay_action += duration};
-avatar.correctStance = () => {
+avatar.correct_stance = () => {
     if(avatar.height === 2) {
         if(avatar.grasping) {
             if(avatar.pullingup) {if(!avatar.blocked(avatar.facing, 0) || avatar.blocked(avatar.facing, 1)) avatar.grasp(0)}
@@ -292,7 +299,7 @@ avatar.correctStance = () => {
         stage.matrix[avatar.position.y][avatar.position.x] = `.`;
         avatar.scarabs++;
     }
-    if(avatar.canExit()) {
+    if(avatar.can_exit()) {
         avatar.current_stage++;
         avatar.story_age += avatar.age;
         avatar.story_scarabs += avatar.scarabs;
@@ -300,9 +307,9 @@ avatar.correctStance = () => {
         avatar.dies();
     }
 }
-avatar.queueFunction = (push, function_to_queue, queue_context, queue_paramaters) => {
-    let wrapFunction = (function_to_wrap, wrap_context, wrap_paramaters) => {return function() {function_to_wrap.apply(wrap_context, wrap_paramaters)}};
-    let wrapped_function = wrapFunction(function_to_queue, queue_context, queue_paramaters);
+avatar.queue_function = (push, function_to_queue, queue_context, queue_paramaters) => {
+    let wrap_function = (function_to_wrap, wrap_context, wrap_paramaters) => {return function() {function_to_wrap.apply(wrap_context, wrap_paramaters)}};
+    let wrapped_function = wrap_function(function_to_queue, queue_context, queue_paramaters);
     if(push && saved_input.length < saved_input_limit) {saved_input.push(wrapped_function)} else {saved_input.unshift(wrapped_function)};
 }
 avatar.blocked = (direction, height) => {
@@ -342,7 +349,7 @@ avatar.gravity = () => {
                 avatar.fell++;
             } else avatar.jumping--;
         }
-        if(!avatar.crouching && (avatar.airtime > 1 || avatar.jumping > 0)) avatar.queueFunction(false, avatar.crouch, this, [1]);
+        if(!avatar.crouching && (avatar.airtime > 1 || avatar.jumping > 0)) avatar.queue_function(false, avatar.crouch, this, [1]);
     }
 }
 avatar.grasp = (mode) => {
@@ -374,7 +381,7 @@ avatar.jump = (power) => {
                 avatar.pullup(1);
             }
         } else if(avatar.jumping === 0 && avatar.blocked(0, -1)) {
-            if(power > 0 && avatar.time_crouched < avatar.jump_delay) {avatar.queueFunction(false, avatar.jump, this, [power])}
+            if(power > 0 && avatar.time_crouched < avatar.jump_delay) {avatar.queue_function(false, avatar.jump, this, [power])}
             else {
                 let can_jump = true;
                 for(let i = 0; i <= power + 1; i++) if(avatar.blocked(0, i)) can_jump = false;
@@ -382,16 +389,16 @@ avatar.jump = (power) => {
                 if(can_jump) {
                     avatar.ascend();
                     avatar.jumping = power;
-                    for(let i = 0; i < power; i++) {avatar.queueFunction(false, avatar.ascend, this, [])};
+                    for(let i = 0; i < power; i++) {avatar.queue_function(false, avatar.ascend, this, [])};
                 }  
             }
-            if(power > 0 && !avatar.crouching) {avatar.queueFunction(false, avatar.crouch, this, [1])};
+            if(power > 0 && !avatar.crouching) {avatar.queue_function(false, avatar.crouch, this, [1])};
         }
     }
 }
 avatar.move = (direction) => {
     if(avatar.alive) {
-        gravity_second = gravity_tick;
+        if(avatar.airtime === 0) gravity_second = gravity_tick;
         let can_move = false;
         let grasped = false;
         if(avatar.crouching
@@ -448,9 +455,9 @@ avatar.move = (direction) => {
             } else if(avatar.blocked(0, -1)
             && !avatar.blocked(0, 1)
             && !avatar.blocked(direction, 1)) {
-                avatar.queueFunction(false, avatar.move, this, [direction]);
-                avatar.queueFunction(false, avatar.jump, this, [0]);
-                if((avatar.blocked(0, 2) || avatar.blocked(direction, 2)) && avatar.height !== 1) avatar.queueFunction(false, avatar.crouch, this, [1]);
+                avatar.queue_function(false, avatar.move, this, [direction]);
+                avatar.queue_function(false, avatar.jump, this, [0]);
+                if((avatar.blocked(0, 2) || avatar.blocked(direction, 2)) && avatar.height !== 1) avatar.queue_function(false, avatar.crouch, this, [1]);
             }
         }
         if(!grasped) avatar.grasp(0);
@@ -458,18 +465,18 @@ avatar.move = (direction) => {
             if(avatar.blocked(0, 1)) {avatar.crouching = true; avatar.time_crouched = 0};
             avatar.position.x += direction;
         }
-        avatar.correctStance();
+        avatar.correct_stance();
     }
 }
 avatar.dies = () => {
     if(avatar.alive) {
-        canvas.deathScreen();
+        canvas.death_screen();
         avatar.alive = false;
     }
 }
 avatar.resurrect = (new_position) => {
     if(!avatar.alive) {
-        stage.inputStringArray(stage.input);
+        stage.input_string_array(stage.input);
         avatar.facing = -1;
         avatar.crouching = false;
         avatar.crouch_lock = false;
@@ -501,43 +508,39 @@ const moving_blocks_tick = 15;
 let time_frozen = false;
 time = () => {
     if(avatar.alive) {
-        if(!time_frozen) {
-            if(avatar.delay_action === 0) {if(saved_input.length > 0) (saved_input.shift())()} else avatar.delay_action--;
-            if(gravity_second === gravity_tick) {gravity_second = 0; avatar.gravity()};
-            if(moving_blocks_second === moving_blocks_tick) {
-                moving_blocks_second = 0;
-                stage.moveMovingBlocks(moving_blocks_direction);
-                if(moving_blocks_direction === 3) {moving_blocks_direction = 0} else moving_blocks_direction++;
-            }
-            avatar.age++;
-            canvas.clear();
-            stage.draw();
-            avatar.correctStance();
-            avatar.draw();
-            gravity_second++;
-            moving_blocks_second++;
+        if(avatar.delay_action === 0) {if(saved_input.length > 0) (saved_input.shift())()} else avatar.delay_action--;
+        if(gravity_second === gravity_tick) {gravity_second = 0; avatar.gravity()};
+        if(moving_blocks_second === moving_blocks_tick) {
+            moving_blocks_second = 0;
+            stage.move_moving_blocks(moving_blocks_direction);
+            if(moving_blocks_direction === 3) {moving_blocks_direction = 0} else moving_blocks_direction++;
         }
+        avatar.age++;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stage.draw();
+        avatar.correct_stance();
+        avatar.draw();
+        gravity_second++;
+        moving_blocks_second++;
     } else {
         if(avatar.successful) {
-            canvas.victoryScreen();
+            canvas.victory_screen();
         } else {
-            canvas.deathScreen();
+            canvas.death_screen();
         }
     }
     window.requestAnimationFrame(time);
 }
 
-let arrow_left_held = false;
-let arrow_right_held = false;
 function keyDown(e) {
     if(avatar.alive) {
-        if(e.key === `ArrowLeft` || e.key === `a` || e.key === `A`) {arrow_left_held = true; avatar.queueFunction(true, avatar.move, this, [1])}
-        else if(e.key === `ArrowRight` || e.key === `d` || e.key === `D`) {arrow_right_held = true; avatar.queueFunction(true, avatar.move, this, [-1])}
-        else if(e.key === `ArrowUp` || e.key === `w` || e.key === `W`) {avatar.queueFunction(true, avatar.jump, this, [1])}
+        if(e.key === `ArrowLeft` || e.key === `a` || e.key === `A`) {avatar.queue_function(true, avatar.move, this, [1])}
+        else if(e.key === `ArrowRight` || e.key === `d` || e.key === `D`) {avatar.queue_function(true, avatar.move, this, [-1])}
+        else if(e.key === `ArrowUp` || e.key === `w` || e.key === `W`) {avatar.queue_function(true, avatar.jump, this, [1])}
         else if(e.key === `ArrowDown` || e.key === `s` || e.key === `S`) {
             if(avatar.blocked(0, -1)) {
-                if(avatar.crouch_lock && avatar.crouching) {avatar.queueFunction(true, avatar.crouch, this, [2])}
-                else if(!avatar.crouching) {avatar.queueFunction(true, avatar.crouch, this, [1])};
+                if(avatar.crouch_lock && avatar.crouching) {avatar.queue_function(true, avatar.crouch, this, [2])}
+                else if(!avatar.crouching) {avatar.queue_function(true, avatar.crouch, this, [1])};
                 avatar.crouch_lock = !avatar.crouch_lock;
             } else {
                 if(avatar.pullingup) {
@@ -546,38 +549,42 @@ function keyDown(e) {
                 } else if(avatar.grasping) avatar.grasp(0);
             }
         }
-        else if(e.key === `g`) {avatar.queueFunction(true, avatar.delayAction, this, [1])}
     } else {
         if(avatar.current_stage >= story.length) {
             avatar.current_stage = 0;
             avatar.story_scarabs = 0;
             avatar.story_age = 0;
         }
-        stage.inputStringArray(story[avatar.current_stage]);
+        stage.input_string_array(story[avatar.current_stage]);
         avatar.resurrect(stage.spawn);
     }
-    // if(e.key === `q`) {console.log(html_stage_input.innerHTML)};
-}
-function keyUp(e) {
-    if(e.key === `ArrowLeft`) {arrow_left_held = false}
-    else if(e.key === `ArrowRight`) {arrow_right_held = false}
 }
 document.addEventListener(`keydown`, keyDown);
-document.addEventListener(`keyup`, keyUp);
 
 let story = [
     // [
-    //     `bbbbbbbbbbbbbbbbbbbbb`,
-    //     `b.....bs.rs.rs.rs.rsb`,
-    //     `b.....b......3......b`,
-    //     `bk....b.............b`,
-    //     `bb..................b`,
-    //     `bb.................xb`,
-    //     `bb..1.rb...........bb`,
-    //     `bb.....b............b`,
-    //     `bb.....b............b`,
-    //     `bb.a...bnnnnnnnnnnnnb`,
-    //     `bbbbbbbbbbbbbbbbbbbbb`
+    //     `bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,
+    //     `bbbbabbbb`,
+    //     `bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,
+    //     `b.......b`,
+    //     `b.......b`,
+    //     `b.......b`,
+    //     `b.......b`,
+    //     `b.k...xrb`,
+    //     `bbbbbbbbb`,
+    // ],
+    // [
+    //     `bbbbbbbbbbbbbbb`,
+    //     `b.....bs.rs.rsb`,
+    //     `b.....b..3....b`,
+    //     `bk....b.......b`,
+    //     `bb............b`,
+    //     `bb...........xb`,
+    //     `bb1...rb.....bb`,
+    //     `bb.....b......b`,
+    //     `bb.....b......b`,
+    //     `bb.a...bnnnnnnb`,
+    //     `bbbbbbbbbbbbbbb`
     // ],
     [
         `bbbbbbbbbbbbbbbbb`,
@@ -595,7 +602,7 @@ let story = [
     ]
 ]
 
-stage.inputStringArray(story[avatar.current_stage]);
+stage.input_string_array(story[avatar.current_stage]);
 
 avatar.resurrect(stage.spawn);
 
