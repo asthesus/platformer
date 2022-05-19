@@ -43,10 +43,20 @@ canvas.victory_screen = () => {
     ctx.fillText(`Success`, canvas.center.x, canvas.center.y);
     ctx.fillStyle = `#666`;
     ctx.font = `${canvas.dimension}px Courier New`;
-    ctx.fillText(`Time: ${avatar.age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
+    ctx.fillText(`Time: ${avatar.age - 1}`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
     ctx.fillText(`Total: ${avatar.story_age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 3));
     ctx.fillText(`Scarabs: ${avatar.scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 4));
     ctx.fillText(`Total: ${avatar.story_scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 5));
+}
+canvas.menu_screen = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.textAlign = `center`;
+    ctx.fillStyle = `#808`;
+    ctx.font = `${canvas.dimension * 1.5}px Courier New`;
+    ctx.fillText(`Pyramid`, canvas.center.x, canvas.center.y);
+    ctx.fillStyle = `#666`;
+    ctx.font = `${canvas.dimension}px Courier New`;
+    ctx.fillText(`Press any key to start`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
 }
 
 stage = {};
@@ -226,7 +236,7 @@ avatar.sprite = avatar_stand_img;
 avatar.age = 0;
 avatar.story_age = 0;
 avatar.successful = false;
-avatar.current_stage = 0;
+avatar.current_stage = -1;
 saved_input_limit = 4;
 
 avatar.can_exit = () => {if(!avatar.successful && avatar.keys > 0 && avatar.height === 2 && stage.matrix[avatar.position.y][avatar.position.x] === `x`) {return true} else return false};
@@ -476,6 +486,7 @@ avatar.dies = () => {
 }
 avatar.resurrect = (new_position) => {
     if(!avatar.alive) {
+        avatar.story_age += avatar.age;
         stage.input_string_array(stage.input);
         avatar.facing = -1;
         avatar.crouching = false;
@@ -526,14 +537,21 @@ time = () => {
         if(avatar.successful) {
             canvas.victory_screen();
         } else {
-            canvas.death_screen();
+            if(avatar.current_stage === -1) {
+                canvas.menu_screen();
+            } else {
+                canvas.death_screen();
+            }
         }
     }
     window.requestAnimationFrame(time);
 }
 
 function keyDown(e) {
-    if(avatar.alive) {
+    if(e.key === `Escape`) {
+        avatar.current_stage = -1;
+        avatar.alive = false;
+    } else if(avatar.alive) {
         if(e.key === `ArrowLeft` || e.key === `a` || e.key === `A`) {avatar.queue_function(true, avatar.move, this, [1])}
         else if(e.key === `ArrowRight` || e.key === `d` || e.key === `D`) {avatar.queue_function(true, avatar.move, this, [-1])}
         else if(e.key === `ArrowUp` || e.key === `w` || e.key === `W`) {avatar.queue_function(true, avatar.jump, this, [1])}
@@ -550,7 +568,7 @@ function keyDown(e) {
             }
         }
     } else {
-        if(avatar.current_stage >= story.length) {
+        if(avatar.current_stage === -1 || avatar.current_stage >= story.length) {
             avatar.current_stage = 0;
             avatar.story_scarabs = 0;
             avatar.story_age = 0;
@@ -599,23 +617,49 @@ let story = [
         `bb...bbbbbbb...bb`,
         `bb.a.bbbbbbb.x.bb`,
         `bbbbbbbbbbbbbbbbb`
+    ],
+    [
+        `bbbbbbbbbbbb`,
+        `b....bb....b`,
+        `b....bb....b`,
+        `b.a..bb..k.b`,
+        `bbbb.bb.bbbb`,
+        `bbbb.111...b`,
+        `bbbb.111...b`,
+        `bbbb.111...b`,
+        `bbbb....333b`,
+        `bbbb....333b`,
+        `bbbb....333b`,
+        `bbbb111....b`,
+        `bbbb111....b`,
+        `bbbb111....b`,
+        `bbbbnnn.nnnb`,
+        `bbbbbbb.bbbb`,
+        `bbbbbbb.bbbb`,
+        `bbbbbbb.bbbb`,
+        `bbbbbbb.bbbb`,
+        `bbbbbbb.bbbb`,
+        `bbbbbbb.bbbb`,
+        `bbbbbbb.bbbb`,
+        `bbbbbbb.bbbb`,
+        `bbbbbbb.bbbb`,
+        `bbbbbbb.bbbb`,
+        `bbbbbbb.bbbb`,
+        `b..........b`,
+        `b..........b`,
+        `b..........b`,
+        `b........x.b`,
+        `bbbbbbbbbbbb`
     ]
 ]
 
-stage.input_string_array(story[avatar.current_stage]);
-
-avatar.resurrect(stage.spawn);
-
-canvas.draw();
-avatar.draw();
+canvas.menu_screen();
 time();
 
 // to do:
 //
 // keybind to show/hide stage input + keybind to apply plain text as a new stage and run it
 // when button is pressed, convert the current stage to plain text and put it in the stage input field
-//
-// delay after dying where the stage and avatar are frozen and player actions are blocked, so the player can see how they died.
 //
 // flying eyeball enemies - move in the direction they're looking, unless it is blocked, in which case they turn 90 degrees counter clockwise. if the player is in the direction the eyeball is looking and the line of sight is unobstructed, the eyeball fires a laser at the player. optic nerve body is dragged behind the eyeball.
 //
