@@ -599,28 +599,6 @@ let story = [
         `bb...bbbbbbb...bb`,
         `bb.a.bbbbbbb.x.bb`,
         `bbbbbbbbbbbbbbbbb`
-    ],
-    [
-        `bbbbbbbbbbbbb`,
-        `b......b....b`,
-        `b......b....b`,
-        `b......b..x.b`,
-        `br...k...bbbb`,
-        `b...wbb..bbbb`,
-        `b....bb..bbbb`,
-        `b.a..bb..bbbb`,
-        `bbbb.bb0.bbbb`,
-        `bbbb.111...bb`,
-        `bbbb.111...bb`,
-        `bbbb.111...bb`,
-        `bbbb....333bb`,
-        `bbbb....333bb`,
-        `bbbb....333bb`,
-        `bbbb111....bb`,
-        `bbbb111....bb`,
-        `bbbb111....bb`,
-        `bbbbbbbbbbbbb`,
-        `bbbbbbbbbbbbb`
     ]
 ]
 
