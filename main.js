@@ -43,7 +43,7 @@ canvas.victory_screen = () => {
     ctx.fillText(`Success`, canvas.center.x, canvas.center.y);
     ctx.fillStyle = `#666`;
     ctx.font = `${canvas.dimension}px Courier New`;
-    ctx.fillText(`Time: ${avatar.age - 1}`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
+    ctx.fillText(`Time: ${avatar.age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
     ctx.fillText(`Total: ${avatar.story_age}`, canvas.center.x, canvas.center.y + (canvas.dimension * 3));
     ctx.fillText(`Scarabs: ${avatar.scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 4));
     ctx.fillText(`Total: ${avatar.story_scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 5));
@@ -310,6 +310,7 @@ avatar.correct_stance = () => {
         avatar.scarabs++;
     }
     if(avatar.can_exit()) {
+        // debugger;
         avatar.current_stage++;
         avatar.story_age += avatar.age;
         avatar.story_scarabs += avatar.scarabs;
@@ -526,7 +527,7 @@ time = () => {
             stage.move_moving_blocks(moving_blocks_direction);
             if(moving_blocks_direction === 3) {moving_blocks_direction = 0} else moving_blocks_direction++;
         }
-        avatar.age++;
+        if(avatar.alive) avatar.age++;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         stage.draw();
         avatar.correct_stance();
@@ -534,23 +535,24 @@ time = () => {
         gravity_second++;
         moving_blocks_second++;
     } else {
-        if(avatar.successful) {
+        if(avatar.current_stage === -1) {
+            canvas.menu_screen();
+        } else if(avatar.successful) {
             canvas.victory_screen();
         } else {
-            if(avatar.current_stage === -1) {
-                canvas.menu_screen();
-            } else {
-                canvas.death_screen();
-            }
+            canvas.death_screen();
         }
     }
     window.requestAnimationFrame(time);
 }
 
 function keyDown(e) {
-    if(e.key === `Escape`) {
+    if(avatar.current_stage !== -1 && e.key === `Escape`) {
         avatar.current_stage = -1;
         avatar.alive = false;
+        avatar.age = 0;
+        avatar.scarabs = 0;
+        avatar.keys = 0;
     } else if(avatar.alive) {
         if(e.key === `ArrowLeft` || e.key === `a` || e.key === `A`) {avatar.queue_function(true, avatar.move, this, [1])}
         else if(e.key === `ArrowRight` || e.key === `d` || e.key === `D`) {avatar.queue_function(true, avatar.move, this, [-1])}
