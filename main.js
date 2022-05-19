@@ -562,30 +562,30 @@ function keyDown(e) {
 document.addEventListener(`keydown`, keyDown);
 
 let story = [
-    // [
-    //     `bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,
-    //     `bbbbabbbb`,
-    //     `bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,
-    //     `b.......b`,
-    //     `b.......b`,
-    //     `b.......b`,
-    //     `b.......b`,
-    //     `b.k...xrb`,
-    //     `bbbbbbbbb`,
-    // ],
-    // [
-    //     `bbbbbbbbbbbbbbb`,
-    //     `b.....bs.rs.rsb`,
-    //     `b.....b..3....b`,
-    //     `bk....b.......b`,
-    //     `bb............b`,
-    //     `bb...........xb`,
-    //     `bb1...rb.....bb`,
-    //     `bb.....b......b`,
-    //     `bb.....b......b`,
-    //     `bb.a...bnnnnnnb`,
-    //     `bbbbbbbbbbbbbbb`
-    // ],
+    [
+        `bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,
+        `bbbbabbbb`,
+        `bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,`bbbb.bbbb`,
+        `b.......b`,
+        `b.......b`,
+        `b.......b`,
+        `b.......b`,
+        `b.k...xrb`,
+        `bbbbbbbbb`,
+    ],
+    [
+        `bbbbbbbbbbbbbbb`,
+        `b.....bs.rs.rsb`,
+        `b.....b..3....b`,
+        `bk....b.......b`,
+        `bb............b`,
+        `bb...........xb`,
+        `bb1...rb.....bb`,
+        `bb.....b......b`,
+        `bb.....b......b`,
+        `bb.a...bnnnnnnb`,
+        `bbbbbbbbbbbbbbb`
+    ],
     [
         `bbbbbbbbbbbbbbbbb`,
         `bbbbbb.....bbbbbb`,
