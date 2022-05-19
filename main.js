@@ -581,6 +581,9 @@ function keyDown(e) {
             avatar.age = 0;
             avatar.scarabs = 0;
             avatar.keys = 0;
+        } else {
+            stage.input_string_array(story[avatar.current_stage]);
+            avatar.resurrect(stage.spawn);
         }
     }
 }
