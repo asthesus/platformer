@@ -36,7 +36,12 @@ canvas.death_screen = () => {
     ctx.fillText(`Press any key to try again`, canvas.center.x, canvas.center.y + (canvas.dimension * 2));
 }
 canvas.victory_screen = () => {
+    // ctx.fillStyle = `#090009`;
+    // ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = `#808`;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
     ctx.textAlign = `center`;
     ctx.fillStyle = `#080`;
     ctx.font = `${canvas.dimension * 1.5}px Courier New`;
@@ -49,7 +54,12 @@ canvas.victory_screen = () => {
     ctx.fillText(`Total: ${avatar.story_scarabs}`, canvas.center.x, canvas.center.y + (canvas.dimension * 5));
 }
 canvas.menu_screen = () => {
+    // ctx.fillStyle = `#090009`;
+    // ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = `#808`;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
     ctx.textAlign = `center`;
     ctx.fillStyle = `#808`;
     ctx.font = `${canvas.dimension * 1.5}px Courier New`;
@@ -658,7 +668,7 @@ let story = [
         `b..........b`,
         `b..........b`,
         `b..........b`,
-        `bn.......x.b`,
+        `b........x.b`,
         `bbbbbbbbbbbb`
     ]
 ]
