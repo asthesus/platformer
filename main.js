@@ -650,9 +650,9 @@ let story = [
         `bbbb....333b`,
         `bbbb....333b`,
         `bbbb....333b`,
-        `bbbb111....b`,
-        `bbbb111....b`,
-        `bbbb111....b`,
+        `bbbb111....$`,
+        `bbbb111....$`,
+        `bbbb111....$`,
         `bbbbnnn.nnnb`,
         `bbbbbbb.bbbb`,
         `bbbbbbb.bbbb`,
@@ -668,7 +668,7 @@ let story = [
         `b..........b`,
         `b..........b`,
         `b..........b`,
-        `b........x.b`,
+        `bw.......x.b`,
         `bbbbbbbbbbbb`
     ]
 ]
